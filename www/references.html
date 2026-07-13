@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Références &amp; liens — Aide-mémoire Data Science</title>
+<script>
+(function(){
+  var z = parseFloat(localStorage.getItem("memo-zoom"));
+  if (!z || isNaN(z)) z = 1;
+  document.documentElement.style.zoom = z;
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F5F7FB;
+    --ink: #172033;
+    --muted: #6B7686;
+    --line: #E1E5EE;
+    --math: #2E9E6D;
+    --plot: #7C5CFC;
+    --regression: #D9455F;
+    --tools: #6B7686;
+    --cheat: #C9932E;
+    --data: #2E8B7A;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'IBM Plex Sans', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--font-body);
+    background:var(--bg);
+    color:var(--ink);
+    padding:44px 24px 80px;
+  }
+  .wrap{max-width:860px;margin:0 auto;}
+  a.back{
+    display:inline-block;
+    margin-bottom:20px;
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    color:var(--muted);
+    text-decoration:none;
+  }
+  a.back:hover{text-decoration:underline;}
+  .top-bar{display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;}
+  .zoom-controls{display:flex; align-items:center; gap:8px;}
+  .zoom-controls button{
+    width:24px;
+    height:24px;
+    border-radius:6px;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+    font-family:var(--font-mono);
+    font-size:14px;
+    line-height:1;
+    cursor:pointer;
+  }
+  .zoom-controls button:hover{background:var(--bg);}
+  .zoom-controls #zoom-level{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--muted);
+    min-width:34px;
+    text-align:center;
+  }
+  h1{
+    font-family:var(--font-display);
+    font-size:28px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin:0 0 8px;
+  }
+  section.category{margin-bottom:42px;}
+  .category-title{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-family:var(--font-display);
+    font-size:18px;
+    font-weight:600;
+    margin:0 0 16px;
+  }
+  .category-title .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .subgroup{margin-bottom:18px;}
+  .subgroup:last-child{margin-bottom:0;}
+  .subgroup-title{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 8px;
+    padding-left:19px;
+  }
+  .linklist{
+    margin:0;
+    padding-left:19px;
+    font-size:13.5px;
+    line-height:2;
+  }
+  .linklist a{
+    color:var(--ink);
+    text-decoration:none;
+    border-bottom:1px solid var(--line);
+  }
+  .linklist a:hover{border-bottom-color:currentColor;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-bar">
+    <a class="back" href="index.html" style="margin-bottom:0;">← retour au mémo</a>
+    <div class="zoom-controls">
+      <button id="zoom-out" type="button" aria-label="Réduire le zoom">−</button>
+      <span id="zoom-level">100%</span>
+      <button id="zoom-in" type="button" aria-label="Augmenter le zoom">+</button>
+    </div>
+  </div>
+  <h1>Références &amp; liens</h1>
+
+  <section class="category">
+    <p class="category-title"><span class="dot" style="background:var(--tools)"></span>Documentation officielle</p>
+    <p class="linklist">[<a href="https://docs.jupyter.org/en/latest/" title="https://docs.jupyter.org/en/latest/" target="_blank" rel="noopener">Jupyter</a>] [<a href="https://numpy.org/doc/stable/" title="https://numpy.org/doc/stable/" target="_blank" rel="noopener">NumPy</a>] [<a href="https://pandas.pydata.org/docs/reference/index.html" title="https://pandas.pydata.org/docs/reference/index.html" target="_blank" rel="noopener">Pandas</a>] [<a href="https://matplotlib.org/gallery/index.html" title="https://matplotlib.org/gallery/index.html" target="_blank" rel="noopener">Matplotlib</a>] [<a href="https://seaborn.pydata.org/" title="https://seaborn.pydata.org/" target="_blank" rel="noopener">Seaborn</a>] [<a href="https://devdocs.io/statsmodels/" title="https://devdocs.io/statsmodels/" target="_blank" rel="noopener">StatsModels</a>] [<a href="https://patsy.readthedocs.io/en/latest/formulas.html" title="https://patsy.readthedocs.io/en/latest/formulas.html" target="_blank" rel="noopener">Patsy</a>] [<a href="https://plotly.com/python/" title="https://plotly.com/python/" target="_blank" rel="noopener">Plotly doc</a>] [<a href="https://plotly.com/examples/" title="https://plotly.com/examples/" target="_blank" rel="noopener">Plotly exemples</a>] [<a href="https://dash.plotly.com/" title="https://dash.plotly.com/" target="_blank" rel="noopener">Dash</a>] [<a href="https://dash-bootstrap-components.opensource.faculty.ai/" title="https://dash-bootstrap-components.opensource.faculty.ai/" target="_blank" rel="noopener">Dash Bootstrap Components</a>]</p>
+  </section>
+
+  <section class="category">
+    <p class="category-title"><span class="dot" style="background:var(--cheat)"></span>Cheat sheets</p>
+    <p class="linklist">[<a href="https://s3.amazonaws.com/assets.datacamp.com/blog_assets/Numpy_Python_Cheat_Sheet.pdf" title="https://s3.amazonaws.com/assets.datacamp.com/blog_assets/Numpy_Python_Cheat_Sheet.pdf" target="_blank" rel="noopener">Numpy</a>] [<a href="https://pandas.pydata.org/Pandas_Cheat_Sheet.pdf" title="https://pandas.pydata.org/Pandas_Cheat_Sheet.pdf" target="_blank" rel="noopener">Pandas</a>] [<a href="https://matplotlib.org/cheatsheets/cheatsheets.pdf" title="https://matplotlib.org/cheatsheets/cheatsheets.pdf" target="_blank" rel="noopener">Matplotlib</a>] [<a href="https://s3.amazonaws.com/assets.datacamp.com/blog_assets/Python_Seaborn_Cheat_Sheet.pdf" title="https://s3.amazonaws.com/assets.datacamp.com/blog_assets/Python_Seaborn_Cheat_Sheet.pdf" target="_blank" rel="noopener">Seaborn</a>]</p>
+  </section>
+
+  <section class="category">
+    <p class="category-title"><span class="dot" style="background:var(--math)"></span>Maths &amp; Probabilités</p>
+
+    <div class="subgroup">
+      <p class="subgroup-title">Probabilités &amp; lois</p>
+      <p class="linklist">[<a href="https://en.wikipedia.org/wiki/Bayes%27_theorem" title="https://en.wikipedia.org/wiki/Bayes%27_theorem" target="_blank" rel="noopener">Bayes' theorem (Wikipedia)</a>] [<a href="https://en.wikipedia.org/wiki/Central_limit_theorem" title="https://en.wikipedia.org/wiki/Central_limit_theorem" target="_blank" rel="noopener">Central limit theorem (Wikipedia)</a>] [<a href="https://en.wikipedia.org/wiki/Confidence_interval" title="https://en.wikipedia.org/wiki/Confidence_interval" target="_blank" rel="noopener">Confidence interval (Wikipedia)</a>] [<a href="https://en.wikipedia.org/wiki/Bessel%27s_correction" title="https://en.wikipedia.org/wiki/Bessel%27s_correction" target="_blank" rel="noopener">Bessel's correction (Wikipedia)</a>] [<a href="https://en.wikipedia.org/wiki/Skewness" title="https://en.wikipedia.org/wiki/Skewness" target="_blank" rel="noopener">Skewness (Wikipedia)</a>] [<a href="https://en.wikipedia.org/wiki/Simpson%27s_paradox" title="https://en.wikipedia.org/wiki/Simpson%27s_paradox" target="_blank" rel="noopener">Simpson's paradox (Wikipedia)</a>] [<a href="https://en.wikipedia.org/wiki/Base_rate_fallacy" title="https://en.wikipedia.org/wiki/Base_rate_fallacy" target="_blank" rel="noopener">Base rate fallacy / faux positifs (Wikipedia)</a>] [<a href="https://fr.wikipedia.org/wiki/Asym%C3%A9trie_(statistiques)" title="https://fr.wikipedia.org/wiki/Asym%C3%A9trie_(statistiques)" target="_blank" rel="noopener">Asymétrie statistique (Wikipedia FR)</a>] [<a href="https://codeburst.io/2-important-statistics-terms-you-need-to-know-in-data-science-skewness-and-kurtosis-388fef94eeaa" title="https://codeburst.io/2-important-statistics-terms-you-need-to-know-in-data-science-skewness-and-kurtosis-388fef94eeaa" target="_blank" rel="noopener">Article : skewness &amp; kurtosis</a>] [<a href="https://dl.acm.org/doi/10.1145/3025453.3025912" title="https://dl.acm.org/doi/10.1145/3025453.3025912" target="_blank" rel="noopener">Papier : Datasaurus (Same Stats, Different Graphs)</a>] [<a href="https://hadrienj.github.io/posts/Marginal-and-Conditional-Probability/" title="https://hadrienj.github.io/posts/Marginal-and-Conditional-Probability/" target="_blank" rel="noopener">Probabilité marginale &amp; conditionnelle</a>] [<a href="https://hadrienj.github.io/posts/Probability-Mass-and-Density-Functions/" title="https://hadrienj.github.io/posts/Probability-Mass-and-Density-Functions/" target="_blank" rel="noopener">PMF &amp; densité de probabilité</a>] [<a href="https://www.probabilitycourse.com/chapter1/1_2_2_set_operations.php" title="https://www.probabilitycourse.com/chapter1/1_2_2_set_operations.php" target="_blank" rel="noopener">Opérations sur ensembles</a>] [<a href="https://www.youtube.com/watch?v=HZGCoVF3YvM" title="https://www.youtube.com/watch?v=HZGCoVF3YvM" target="_blank" rel="noopener">3Blue1Brown — Théorème de Bayes (vidéo)</a>] [<a href="https://www.youtube.com/watch?v=zeJD6dqJ5lo" title="https://www.youtube.com/watch?v=zeJD6dqJ5lo" target="_blank" rel="noopener">3Blue1Brown — Théorème Central Limite (vidéo)</a>] [<a href="https://www.youtube.com/watch?v=Rsc5znwR5FA" title="https://www.youtube.com/watch?v=Rsc5znwR5FA" target="_blank" rel="noopener">3Blue1Brown — Bayesian updating (vidéo)</a>]</p>
+    </div>
+
+    <div class="subgroup">
+      <p class="subgroup-title">Inférence statistique</p>
+      <p class="linklist">[<a href="https://archive.ipcc.ch/publications_and_data/ar4/wg1/en/ch1s1-6.html" title="https://archive.ipcc.ch/publications_and_data/ar4/wg1/en/ch1s1-6.html" target="_blank" rel="noopener">Échelle de confiance (IPCC)</a>] [<a href="https://www.popdata.bc.ca/sites/default/files/documents/events/etu/Hernan_Book.pdf" title="https://www.popdata.bc.ca/sites/default/files/documents/events/etu/Hernan_Book.pdf" target="_blank" rel="noopener">Hernán &amp; Robins — Causal Inference: What If (PDF)</a>] [<a href="https://medium.com/towards-data-science/probability-concepts-explained-bayesian-inference-for-parameter-estimation-90e8930e5348" title="https://medium.com/towards-data-science/probability-concepts-explained-bayesian-inference-for-parameter-estimation-90e8930e5348" target="_blank" rel="noopener">Inférence bayésienne — estimation de paramètres</a>] [<a href="https://mirkomazzoleni.github.io/blog/2016/perception_of_probability/" title="https://mirkomazzoleni.github.io/blog/2016/perception_of_probability/" target="_blank" rel="noopener">Perception de la probabilité (blog)</a>] [<a href="https://statisticsbyjim.com/hypothesis-testing/degrees-freedom-statistics/" title="https://statisticsbyjim.com/hypothesis-testing/degrees-freedom-statistics/" target="_blank" rel="noopener">Degrés de liberté, expliqués</a>] [<a href="https://www.khanacademy.org/math/statistics-probability" title="https://www.khanacademy.org/math/statistics-probability" target="_blank" rel="noopener">Khan Academy — Statistiques &amp; Probabilités</a>] [<a href="https://www.statisticshowto.com/bessels-correction/" title="https://www.statisticshowto.com/bessels-correction/" target="_blank" rel="noopener">Correction de Bessel, expliquée</a>] [<a href="https://www.youtube.com/watch?v=rhuMH8A5t8s" title="https://www.youtube.com/watch?v=rhuMH8A5t8s" target="_blank" rel="noopener">StatQuest — puissance statistique (vidéo)</a>]</p>
+    </div>
+  </section>
+
+  <section class="category">
+    <p class="category-title"><span class="dot" style="background:var(--regression)"></span>Statsmodels &amp; Régression</p>
+
+    <div class="subgroup">
+      <p class="subgroup-title">Régression linéaire</p>
+      <p class="linklist">[<a href="https://statisticsbyjim.com/" title="https://statisticsbyjim.com/" target="_blank" rel="noopener">Statistics by Jim (blog régression)</a>] [<a href="https://statisticsbyjim.com/regression/interpret-r-squared-regression/" title="https://statisticsbyjim.com/regression/interpret-r-squared-regression/" target="_blank" rel="noopener">Interpréter le R²</a>] [<a href="https://statisticsbyjim.com/regression/ols-linear-regression-assumptions/" title="https://statisticsbyjim.com/regression/ols-linear-regression-assumptions/" target="_blank" rel="noopener">Hypothèses de l'OLS</a>] [<a href="https://www.kdnuggets.com/2019/07/check-quality-regression-model-python.html" title="https://www.kdnuggets.com/2019/07/check-quality-regression-model-python.html" target="_blank" rel="noopener">Vérifier la qualité d'un modèle de régression</a>] [<a href="https://www.statlearning.com/" title="https://www.statlearning.com/" target="_blank" rel="noopener">Livre — An Introduction to Statistical Learning (ISLR)</a>] [<a href="https://www.coursera.org/learn/regression-models" title="https://www.coursera.org/learn/regression-models" target="_blank" rel="noopener">Coursera — Regression Models</a>] [<a href="https://www.youtube.com/playlist?list=PLblh5JKOoLUIzaEkCLIUxQFjPIlapw8nU" title="https://www.youtube.com/playlist?list=PLblh5JKOoLUIzaEkCLIUxQFjPIlapw8nU" target="_blank" rel="noopener">StatQuest — playlist Linear Regression (vidéos)</a>] [<a href="https://www.youtube.com/watch?v=4otEcA3gjLk" title="https://www.youtube.com/watch?v=4otEcA3gjLk" target="_blank" rel="noopener">Degrés de liberté (n-2), vidéo</a>]</p>
+    </div>
+
+    <div class="subgroup">
+      <p class="subgroup-title">Régression logistique</p>
+      <p class="linklist">[<a href="https://www.youtube.com/playlist?list=PLblh5JKOoLUKxzEP5HA2d-Li7IJkHfXSe" title="https://www.youtube.com/playlist?list=PLblh5JKOoLUKxzEP5HA2d-Li7IJkHfXSe" target="_blank" rel="noopener">StatQuest — playlist Logistic Regression (vidéos)</a>] [<a href="https://medium.com/towards-data-science/why-not-mse-as-a-loss-function-for-logistic-regression-589816b5e03c" title="https://medium.com/towards-data-science/why-not-mse-as-a-loss-function-for-logistic-regression-589816b5e03c" target="_blank" rel="noopener">Pourquoi log-loss plutôt que MSE pour la régression logistique</a>]</p>
+    </div>
+  </section>
+
+  <section class="category">
+    <p class="category-title"><span class="dot" style="background:var(--plot)"></span>Data-viz &amp; Dashboarding</p>
+    <p class="linklist">[<a href="https://www.data-to-viz.com/" title="https://www.data-to-viz.com/" target="_blank" rel="noopener">Data-to-viz — choisir le bon graphique</a>] [<a href="https://www.data-to-viz.com/caveats.html" title="https://www.data-to-viz.com/caveats.html" target="_blank" rel="noopener">Data-to-viz — pièges des graphiques</a>] [<a href="https://clauswilke.com/dataviz/" title="https://clauswilke.com/dataviz/" target="_blank" rel="noopener">Livre — Fundamentals of Data Visualization (C. Wilke)</a>] [<a href="https://callingbull.org/" title="https://callingbull.org/" target="_blank" rel="noopener">Calling Bull — repérer les mauvais chiffres/graphiques</a>] [<a href="https://www.kdnuggets.com/2021/02/telling-great-data-story-visualization-decision-tree.html" title="https://www.kdnuggets.com/2021/02/telling-great-data-story-visualization-decision-tree.html" target="_blank" rel="noopener">Storytelling avec la donnée (article)</a>] [<a href="https://medium.com/towards-data-science/the-many-ways-to-call-axes-in-matplotlib-2667a7b06e06" title="https://medium.com/towards-data-science/the-many-ways-to-call-axes-in-matplotlib-2667a7b06e06" target="_blank" rel="noopener">Comprendre les Axes matplotlib</a>] [<a href="https://www.w3.org/WAI/standards-guidelines/wcag/" title="https://www.w3.org/WAI/standards-guidelines/wcag/" target="_blank" rel="noopener">Spec WCAG (accessibilité)</a>] [<a href="https://yellowchalk.com/blog/designing-for-color-blindness/" title="https://yellowchalk.com/blog/designing-for-color-blindness/" target="_blank" rel="noopener">Concevoir un dashboard pour le daltonisme</a>]</p>
+  </section>
+
+  <section class="category">
+    <p class="category-title"><span class="dot" style="background:var(--data)"></span>Sources de données</p>
+    <p class="linklist">[<a href="https://www.kaggle.com/fernandol/countries-of-the-world" title="https://www.kaggle.com/fernandol/countries-of-the-world" target="_blank" rel="noopener">Dataset Kaggle — Countries of the World</a>] [<a href="https://www.gapminder.org/data/" title="https://www.gapminder.org/data/" target="_blank" rel="noopener">Gapminder — données ouvertes</a>] [<a href="https://data.worldbank.org/" title="https://data.worldbank.org/" target="_blank" rel="noopener">World Bank Open Data</a>] [<a href="https://www.kaggle.com/olistbr/brazilian-ecommerce" title="https://www.kaggle.com/olistbr/brazilian-ecommerce" target="_blank" rel="noopener">Dataset Kaggle — Olist (e-commerce brésilien)</a>] [<a href="https://github.com/owid/co2-data/tree/master" title="https://github.com/owid/co2-data/tree/master" target="_blank" rel="noopener">Dataset CO2 (Our World in Data)</a>] [<a href="https://ourworldindata.org/" title="https://ourworldindata.org/" target="_blank" rel="noopener">Our World in Data (source des données)</a>] [<a href="https://github.com/public-apis/public-apis" title="https://github.com/public-apis/public-apis" target="_blank" rel="noopener">Liste d'APIs publiques</a>]</p>
+  </section>
+</div>
+<script>
+const ZOOM_KEY = "memo-zoom", ZOOM_MIN = 0.8, ZOOM_MAX = 1.6, ZOOM_STEP = 0.1;
+function applyZoom(z){
+  z = Math.round(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z)) * 100) / 100;
+  document.documentElement.style.zoom = z;
+  localStorage.setItem(ZOOM_KEY, z);
+  document.getElementById("zoom-level").textContent = Math.round(z * 100) + "%";
+}
+document.getElementById("zoom-out").addEventListener("click", () => {
+  applyZoom((parseFloat(document.documentElement.style.zoom) || 1) - ZOOM_STEP);
+});
+document.getElementById("zoom-in").addEventListener("click", () => {
+  applyZoom((parseFloat(document.documentElement.style.zoom) || 1) + ZOOM_STEP);
+});
+applyZoom(parseFloat(document.documentElement.style.zoom) || 1);
+</script>
+</body>
+</html>

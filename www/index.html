@@ -3,10 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Numpy &amp; Pandas — Aide-mémoire</title>
+<title>Data Science — Aide-mémoire</title>
+<script>
+(function(){
+  var z = parseFloat(localStorage.getItem("memo-zoom"));
+  if (!z || isNaN(z)) z = 1;
+  document.documentElement.style.zoom = z;
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <style>
   :root{
     --bg: #F5F7FB;
@@ -20,7 +28,12 @@
     --line: #E1E5EE;
     --numpy: #3D6EFF;
     --pandas: #E8993D;
-    --pieges: #D2483F;
+    --math: #2E9E6D;
+    --plot: #7C5CFC;
+    --stats: #1F9FBF;
+    --regression: #D9455F;
+    --dash: #C2478A;
+    --ml: #CC9A1F;
     --code-tint: #EEF2FF;
     --result-tint: #FFF6EA;
     --font-display: 'Space Grotesk', sans-serif;
@@ -67,26 +80,177 @@
     color:var(--sidebar-text);
     margin:0;
   }
+  #sidebar .brand a{
+    display:inline-block;
+    margin-top:10px;
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    color:#9DB4FF;
+    text-decoration:none;
+  }
+  #sidebar .brand a:hover{text-decoration:underline;}
+  .zoom-controls{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:14px;
+  }
+  .zoom-controls button{
+    width:24px;
+    height:24px;
+    border-radius:6px;
+    border:1px solid rgba(255,255,255,0.14);
+    background:var(--sidebar-hover);
+    color:var(--sidebar-text-active);
+    font-family:var(--font-mono);
+    font-size:14px;
+    line-height:1;
+    cursor:pointer;
+  }
+  .zoom-controls button:hover{background:var(--sidebar-active);}
+  .zoom-controls #zoom-level{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--sidebar-text);
+    min-width:34px;
+    text-align:center;
+  }
+  .search-box{margin-top:14px;}
+  .search-box input{
+    width:100%;
+    box-sizing:border-box;
+    background:var(--sidebar-hover);
+    border:1px solid rgba(255,255,255,0.14);
+    color:var(--sidebar-text-active);
+    border-radius:6px;
+    padding:7px 9px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    outline:none;
+  }
+  .search-box input::placeholder{color:var(--sidebar-text);}
+  .search-box input:focus{border-color:#9DB4FF;}
+  .search-nav{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:8px;
+  }
+  .search-nav button{
+    width:24px;
+    height:24px;
+    border-radius:6px;
+    border:1px solid rgba(255,255,255,0.14);
+    background:var(--sidebar-hover);
+    color:var(--sidebar-text-active);
+    font-size:13px;
+    line-height:1;
+    cursor:pointer;
+  }
+  .search-nav button:hover{background:var(--sidebar-active);}
+  .search-nav button:disabled{opacity:0.35; cursor:default;}
+  .search-nav #search-count{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--sidebar-text);
+    min-width:42px;
+    text-align:center;
+  }
+  mark.search-mark{background:#FFE58A; color:inherit; border-radius:2px; padding:0 1px;}
+  mark.search-mark.current{background:#FFB020; box-shadow:0 0 0 2px rgba(255,176,32,0.5);}
+  #nav-groups{padding-bottom:50px;}
+  .sidebar-footer{
+    position:fixed;
+    left:0; bottom:0;
+    width:280px;
+    box-sizing:border-box;
+    padding:10px 24px;
+    background:var(--sidebar-bg);
+    border-top:1px solid rgba(255,255,255,0.08);
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--sidebar-text);
+  }
   .nav-group{margin-top:22px;}
   .nav-group-label{
     font-family:var(--font-mono);
     font-size:11px;
     letter-spacing:0.12em;
+    text-transform:uppercase;
     padding:0 24px 8px;
     display:flex;
     align-items:center;
     gap:8px;
+    cursor:pointer;
+    user-select:none;
   }
   .nav-group-label .dot{
     width:7px;height:7px;border-radius:50%;
     display:inline-block;
   }
+  .nav-group-label .label-text{flex:1;}
+  .nav-group-label .chevron{
+    font-size:10px;
+    opacity:0.5;
+    transition:transform 0.15s ease;
+    transform:rotate(0deg);
+  }
+  .nav-group.collapsed .nav-group-label .chevron{transform:rotate(-90deg);}
+  .nav-group-items{
+    overflow:hidden;
+  }
+  .nav-group.collapsed .nav-group-items{display:none;}
   .nav-group-label.numpy{color:#9DB4FF;}
   .nav-group-label.numpy .dot{background:var(--numpy);}
   .nav-group-label.pandas{color:#F4C583;}
   .nav-group-label.pandas .dot{background:var(--pandas);}
-  .nav-group-label.pieges{color:#F0A29C;}
-  .nav-group-label.pieges .dot{background:var(--pieges);}
+  .nav-group-label.math{color:#8DE0BE;}
+  .nav-group-label.math .dot{background:var(--math);}
+  .nav-group-label.plot{color:#C9BBFF;}
+  .nav-group-label.plot .dot{background:var(--plot);}
+  .nav-group-label.stats{color:#9FE0EE;}
+  .nav-group-label.stats .dot{background:var(--stats);}
+  .nav-group-label.regression{color:#FFB3C6;}
+  .nav-group-label.regression .dot{background:var(--regression);}
+  .nav-group-label.dash{color:#EBA8CF;}
+  .nav-group-label.dash .dot{background:var(--dash);}
+  .nav-group-label.ml{color:#F0CF6B;}
+  .nav-group-label.ml .dot{background:var(--ml);}
+
+  .nav-subgroup{margin-top:2px;}
+  .nav-subgroup-label{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:0.09em;
+    text-transform:lowercase;
+    color:#B7C0D6;
+    padding:10px 24px 8px 20px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .nav-subgroup-label:hover{opacity:0.8;}
+  .nav-subgroup-label .label-text{flex:1;}
+  .nav-subgroup-label.numpy{color:#9DB4FF;}
+  .nav-subgroup-label.pandas{color:#F4C583;}
+  .nav-subgroup-label.math{color:#8DE0BE;}
+  .nav-subgroup-label.plot{color:#C9BBFF;}
+  .nav-subgroup-label.stats{color:#9FE0EE;}
+  .nav-subgroup-label.regression{color:#FFB3C6;}
+  .nav-subgroup-label.dash{color:#EBA8CF;}
+  .nav-subgroup-label.ml{color:#F0CF6B;}
+  .nav-subgroup-label .chevron{
+    font-size:9px;
+    opacity:0.6;
+    transition:transform 0.15s ease;
+    transform:rotate(0deg);
+  }
+  .nav-subgroup.collapsed .nav-subgroup-label .chevron{transform:rotate(-90deg);}
+  .nav-subgroup-items{overflow:hidden;}
+  .nav-subgroup.collapsed .nav-subgroup-items{display:none;}
+  .nav-subgroup-items .nav-item{padding-left:34px;}
 
   .nav-item{
     display:flex;
@@ -104,12 +268,6 @@
     cursor:pointer;
     transition:background 0.12s ease, color 0.12s ease;
   }
-  .nav-item .idx{
-    font-family:var(--font-mono);
-    font-size:11.5px;
-    color:rgba(255,255,255,0.28);
-    flex-shrink:0;
-  }
   .nav-item:hover{background:var(--sidebar-hover); color:#D5DBE8;}
   .nav-item.active{
     background:var(--sidebar-active);
@@ -117,8 +275,12 @@
   }
   .nav-item.active.numpy{border-left-color:var(--numpy);}
   .nav-item.active.pandas{border-left-color:var(--pandas);}
-  .nav-item.active.pieges{border-left-color:var(--pieges);}
-  .nav-item.active .idx{color:inherit; opacity:0.55;}
+  .nav-item.active.math{border-left-color:var(--math);}
+  .nav-item.active.plot{border-left-color:var(--plot);}
+  .nav-item.active.stats{border-left-color:var(--stats);}
+  .nav-item.active.regression{border-left-color:var(--regression);}
+  .nav-item.active.dash{border-left-color:var(--dash);}
+  .nav-item.active.ml{border-left-color:var(--ml);}
 
   /* ---------- MAIN ---------- */
   #main{
@@ -147,8 +309,18 @@
   .panel-eyebrow.numpy .dot{background:var(--numpy);}
   .panel-eyebrow.pandas{color:#B96F13;}
   .panel-eyebrow.pandas .dot{background:var(--pandas);}
-  .panel-eyebrow.pieges{color:#B23A2F;}
-  .panel-eyebrow.pieges .dot{background:var(--pieges);}
+  .panel-eyebrow.math{color:#1F7A54;}
+  .panel-eyebrow.math .dot{background:var(--math);}
+  .panel-eyebrow.plot{color:#5B3FCB;}
+  .panel-eyebrow.plot .dot{background:var(--plot);}
+  .panel-eyebrow.stats{color:#15748C;}
+  .panel-eyebrow.stats .dot{background:var(--stats);}
+  .panel-eyebrow.regression{color:#B23A55;}
+  .panel-eyebrow.regression .dot{background:var(--regression);}
+  .panel-eyebrow.dash{color:#9C2F6E;}
+  .panel-eyebrow.dash .dot{background:var(--dash);}
+  .panel-eyebrow.ml{color:#8F6B10;}
+  .panel-eyebrow.ml .dot{background:var(--ml);}
 
   .panel-header h2{
     font-family:var(--font-display);
@@ -194,6 +366,12 @@
     width:42%;
   }
   td.col-syntaxe code{white-space:pre-wrap; display:block;}
+  td.col-syntaxe code strong, .broken-code strong{
+    background:#BFDBFE;
+    padding:0 3px;
+    border-radius:3px;
+    font-weight:700;
+  }
   .broken-code{
     display:block;
     color:#9AA3B5;
@@ -227,6 +405,76 @@
     font-family:var(--font-mono);
     font-size:12px;
   }
+  td.col-nom{color:var(--ink); width:20%;}
+  td.col-formule{
+    background:var(--code-tint);
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    color:#1F2A5C;
+    width:32%;
+    white-space:pre-wrap;
+  }
+  td.col-formule code{white-space:pre-wrap; display:block;}
+  td.col-formule strong{
+    background:#BFDBFE;
+    padding:0 3px;
+    border-radius:3px;
+    font-weight:700;
+  }
+  td.col-params{
+    background:#EAF7F0;
+    color:#1F6B4A;
+    width:24%;
+    font-family:var(--font-mono);
+    font-size:12px;
+  }
+  .param-line{
+    line-height:1.5;
+    margin-bottom:8px;
+  }
+  .param-line:last-child{margin-bottom:0;}
+  td.col-explication{
+    background:var(--result-tint);
+    color:#5C3F14;
+    width:24%;
+    white-space:pre-wrap;
+    font-family:var(--font-mono);
+    font-size:12px;
+  }
+  td .katex-display{
+    margin:6px 0;
+    overflow-x:auto;
+    overflow-y:hidden;
+  }
+  td.col-formule .katex-display{
+    background:#fff;
+    border:1px solid rgba(31,42,92,0.12);
+    border-radius:6px;
+    padding:8px 10px;
+    margin:0 0 8px;
+  }
+  td.col-formule .katex{
+    background:#fff;
+    border:1px solid rgba(31,42,92,0.12);
+    border-radius:5px;
+    padding:2px 6px;
+    display:inline-block;
+    margin-bottom:6px;
+  }
+  td.col-formule .katex-display .katex{
+    background:none;
+    border:none;
+    padding:0;
+    margin:0;
+    display:inline;
+  }
+  td.col-params .katex{
+    background:#fff;
+    border:1px solid rgba(31,111,74,0.2);
+    border-radius:4px;
+    padding:0px 5px;
+    display:inline-block;
+  }
   .compat-note{
     margin-top:8px;
     padding-top:8px;
@@ -248,6 +496,8 @@
       padding:16px 0;
     }
     #sidebar .brand{padding:0 16px 14px;}
+    .sidebar-footer{position:static; width:100%; margin-top:14px;}
+    #nav-groups{padding-bottom:0;}
     .nav-group{margin-top:14px;}
     #main{padding:28px 18px 60px; max-width:100%;}
     table, thead, tbody, th, td, tr{display:block;}
@@ -259,6 +509,7 @@
     tbody tr:last-child{border-bottom:none;}
     td{border-bottom:none !important; padding:6px 16px !important; width:auto !important;}
     td.col-objectif{font-weight:500;}
+    td.col-nom{font-weight:500;}
     td::before{
       content:attr(data-label);
       display:block;
@@ -275,140 +526,248 @@
 
 <nav id="sidebar">
   <div class="brand">
-    <h1>Numpy &amp; Pandas</h1>
+    <h1>Data Science</h1>
     <p>aide-mémoire par cas d'usage</p>
+    <a href="references.html">Références &amp; liens →</a>
+    <div class="zoom-controls">
+      <button id="zoom-out" type="button" aria-label="Réduire le zoom">−</button>
+      <span id="zoom-level">100%</span>
+      <button id="zoom-in" type="button" aria-label="Augmenter le zoom">+</button>
+    </div>
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="Rechercher… ( / )" autocomplete="off">
+      <div class="search-nav">
+        <button id="search-prev" type="button" aria-label="Résultat précédent" disabled>↑</button>
+        <span id="search-count"></span>
+        <button id="search-next" type="button" aria-label="Résultat suivant" disabled>↓</button>
+      </div>
+    </div>
   </div>
   <div id="nav-groups"></div>
+  <div class="sidebar-footer">Dernière mise à jour : __LAST_UPDATED__</div>
 </nav>
 
 <main id="main"></main>
 
 <script>
+const ZOOM_KEY = "memo-zoom", ZOOM_MIN = 0.8, ZOOM_MAX = 1.6, ZOOM_STEP = 0.1;
+function applyZoom(z){
+  z = Math.round(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z)) * 100) / 100;
+  document.documentElement.style.zoom = z;
+  localStorage.setItem(ZOOM_KEY, z);
+  document.getElementById("zoom-level").textContent = Math.round(z * 100) + "%";
+}
+document.getElementById("zoom-out").addEventListener("click", () => {
+  applyZoom((parseFloat(document.documentElement.style.zoom) || 1) - ZOOM_STEP);
+});
+document.getElementById("zoom-in").addEventListener("click", () => {
+  applyZoom((parseFloat(document.documentElement.style.zoom) || 1) + ZOOM_STEP);
+});
+applyZoom(parseFloat(document.documentElement.style.zoom) || 1);
+
 const sections = [
   {id:"creation", group:"numpy", title:"Création de tableaux", rows:[
-    ["Créer un tableau à partir d'une liste","np.array([1, 2, 3])","array([1, 2, 3])"],
-    ["Tableau de zéros","np.zeros((3, 4))","matrice 3x4 remplie de 0"],
-    ["Tableau de uns","np.ones((2, 2))","matrice 2x2 remplie de 1"],
-    ["Suite régulière (début, fin, pas)","np.arange(0, 10, 2)","array([0, 2, 4, 6, 8])"],
-    ["N valeurs régulières entre deux bornes","np.linspace(0, 1, 5)","array([0., 0.25, 0.5, 0.75, 1.])"],
-    ["Tableau aléatoire uniforme [0,1)","np.random.rand(3, 3)","matrice 3x3 de floats aléatoires"],
-    ["Tableau d'entiers aléatoires","np.random.randint(0, 10, size=(2, 3))","matrice 2x3 d'entiers entre 0 et 9"],
+    ["Créer un tableau à partir d'une liste","**np.array**([1, 2, 3])","array([1, 2, 3])"],
+    ["Tableau de zéros","**np.zeros**((3, 4))","matrice 3x4 remplie de 0"],
+    ["Tableau de uns","**np.ones**((2, 2))","matrice 2x2 remplie de 1"],
+    ["Matrice identité","**np.eye**(3)","matrice 3x3 avec des 1 sur la diagonale, 0 ailleurs"],
+    ["Suite régulière (début, fin, pas)","**np.arange**(0, 10, 2)","array([0, 2, 4, 6, 8])"],
+    ["N valeurs régulières entre deux bornes","**np.linspace**(0, 1, 5)","array([0., 0.25, 0.5, 0.75, 1.])"],
+    ["Tableau aléatoire uniforme [0,1)","**np.random.rand**(3, 3)","matrice 3x3 de floats aléatoires"],
+    ["Tableau d'entiers aléatoires","**np.random.randint**(0, 10, size=(2, 3))","matrice 2x3 d'entiers entre 0 et 9"],
+  ]},
+  {id:"attributs-numpy", group:"numpy", title:"Attributs d'un tableau (ndim, shape, size, dtype)", rows:[
+    ["Nombre de dimensions","a.**ndim**","int — 1 pour un vecteur, 2 pour une matrice, etc."],
+    ["Forme (dimensions) du tableau","a.**shape**","tuple — (lignes, colonnes) pour un tableau 2D"],
+    ["Nombre total d'éléments","a.**size**","int — produit de toutes les dimensions de shape"],
+    ["Type des éléments","a.**dtype**","ex: int64, float64 — tous les éléments d'un ndarray ont le même type, contrairement à une liste Python"],
+    ["Reconvertir en liste Python native","a.**tolist**()","list (ou liste de listes) — utile pour interopérer avec du code qui attend des listes plutôt que des ndarray"],
   ]},
   {id:"indexation", group:"numpy", title:"Indexation et masques", rows:[
-    ["Élément précis (ligne, colonne)","a[1, 2]","valeur unique à la position [1,2]"],
-    ["Une ligne entière","a[1]","tableau 1D, la ligne d'index 1"],
-    ["Une colonne entière","a[:, 0]","tableau 1D, la colonne d'index 0"],
-    ["Sous-matrice (plage de lignes et colonnes)","a[1:3, 0:2]","matrice 2x2 extraite"],
-    ["Toutes les lignes, colonnes choisies","a[:, [0, 2]]","colonnes 0 et 2 pour toutes les lignes"],
-    ["Un axe entier avec un pas","a[::2, ::2]","1 ligne sur 2, 1 colonne sur 2"],
-    ["Inverser l'ordre d'un axe","a[::-1]","lignes dans l'ordre inverse"],
-    ["Filtrer par condition","a[a > 5]","tableau 1D des éléments > 5"],
-    ["Combiner plusieurs conditions","a[(a > 2) & (a < 8)]","éléments entre 2 et 8 (exclus)"],
-    ["Remplacer selon condition","np.where(a > 5, 1, 0)","1 si > 5, sinon 0"],
-    ["Changer la forme d'un tableau","a.reshape(3, 4)","même données, forme 3x4"],
-    ["Aplatir un tableau","a.flatten()","tableau 1D"],
-    ["Transposer","a.T","lignes/colonnes inversées"],
-    ["Trier un tableau (nouvelle copie)","np.sort(a)","tableau trié croissant, a n'est pas modifié"],
-    ["Trier un tableau sur place","a.sort()","modifie a directement, ne renvoie rien"],
-    ["Indices qui donneraient le tableau trié","np.argsort(a)","tableau des positions, dans l'ordre de tri"],
+    ["Élément précis (ligne, colonne)","a**[1, 2]**","valeur unique à la position [1,2]"],
+    ["Une ligne entière","a**[1]**","tableau 1D, la ligne d'index 1"],
+    ["Une colonne entière","a**[:, 0]**","tableau 1D, la colonne d'index 0"],
+    ["Sous-matrice (plage de lignes et colonnes)","a**[1:3, 0:2]**","matrice 2x2 extraite"],
+    ["Toutes les lignes, colonnes choisies","a[:, **[0, 2]**]","colonnes 0 et 2 pour toutes les lignes"],
+    ["Un axe entier avec un pas","a[**::2**, **::2**]","1 ligne sur 2, 1 colonne sur 2"],
+    ["Inverser l'ordre d'un axe","a[**::-1**]","lignes dans l'ordre inverse"],
+    ["Filtrer par condition","a[**a > 5**]","tableau 1D des éléments > 5"],
+    ["Combiner plusieurs conditions","a[(a > 2) **&** (a < 8)]","éléments entre 2 et 8 (exclus)"],
+    ["Remplacer selon condition","**np.where**(a > 5, 1, 0)","1 si > 5, sinon 0"],
+    ["Remplacer en place tous les éléments vérifiant une condition","a[**a > 4**] = 99","modifie a directement (contrairement à np.where qui renvoie un nouveau tableau sans toucher a)"],
+  ]},
+  {id:"reshape-tri", group:"numpy", title:"Forme et tri des tableaux", rows:[
+    ["Changer la forme d'un tableau","a.**reshape**(3, 4)","même données, forme 3x4"],
+    ["Aplatir un tableau","a.**flatten**()","tableau 1D"],
+    ["Transposer","a.**T**","lignes/colonnes inversées"],
+    ["Trier un tableau (nouvelle copie)","**np.sort**(a)","tableau trié croissant, a n'est pas modifié"],
+    ["Trier un tableau sur place","a.**sort**()","modifie a directement, ne renvoie rien"],
+    ["Indices qui donneraient le tableau trié","**np.argsort**(a)","tableau des positions, dans l'ordre de tri"],
   ]},
   {id:"stats-numpy", group:"numpy", title:"Opérations et stats", rows:[
-    ["Somme des éléments","a.sum()","scalaire"],
-    ["Moyenne","a.mean()","scalaire"],
-    ["Écart-type","a.std()","scalaire"],
-    ["Min / max","a.min(), a.max()","scalaire"],
-    ["Index du max","a.argmax()","position (int)"],
-    ["Concaténer deux tableaux","np.concatenate([a, b])","tableau fusionné"],
-    ["Produit matriciel","np.dot(a, b)","matrice ou scalaire selon dimensions"],
-    ["Opération élément par élément","a + b","tableau (broadcasting)"],
+    ["Somme des éléments","a.**sum**()","scalaire"],
+    ["Choisir l'axe d'agrégation sur un tableau 2D","a.sum(**axis=0**)  # somme par colonne (vertical)\na.sum(**axis=1**)  # somme par ligne (horizontal)","même principe pour mean()/std()/min()/max() — axis=0 écrase les lignes (1 résultat par colonne), axis=1 écrase les colonnes (1 résultat par ligne) : piège fréquent d'inverser les deux"],
+    ["Moyenne","a.**mean**()","scalaire"],
+    ["Écart-type","a.**std**()","scalaire"],
+    ["Min / max","a.**min**(), a.**max**()","scalaire"],
+    ["Index du max","a.**argmax**()","position (int)"],
+    ["Concaténer deux tableaux","**np.concatenate**([a, b])","tableau fusionné"],
+    ["Produit matriciel","**np.dot**(a, b)","matrice ou scalaire selon dimensions"],
+    ["Opération élément par élément","**a + b**","tableau (broadcasting)"],
   ]},
-  {id:"lecture", group:"pandas", title:"Lecture / écriture de données", rows:[
-    ["Lire un CSV","pd.read_csv(\"fichier.csv\", sep=\",\", encoding=\"utf-8\")","DataFrame"],
-    ["Lire un Excel","pd.read_excel(\"fichier.xlsx\", sheet_name=\"Feuille1\")","DataFrame"],
-    ["Lire un Parquet","pd.read_parquet(\"fichier.parquet\")","DataFrame"],
-    ["Lire un JSON","pd.read_json(\"fichier.json\")","DataFrame"],
-    ["Écrire un CSV","df.to_csv(\"sortie.csv\", index=False)","fichier créé, sans colonne d'index"],
-    ["Écrire un Excel","df.to_excel(\"sortie.xlsx\", index=False)","fichier créé"],
+  {id:"alea-lois", group:"numpy", title:"Tirages aléatoires (lois usuelles)", rows:[
+    ["Entier aléatoire entre low (inclus) et high (exclu)","**np.random.randint**(1, 6+1)","int aléatoire entre 1 et 6 (ex: lancer de dé)"],
+    ["Plusieurs tirages d'un coup","**np.random.randint**(1, 6+1, 3)","array de 3 entiers aléatoires"],
+    ["Tirage(s) suivant une loi Binomiale(n,p)","**np.random.binomial**(n=10, p=0.7, size=20)","array de 20 résultats, chacun = nb de succès sur n essais"],
+    ["N valeurs régulières pour tracer une courbe continue","**np.linspace**(mu - 4*sigma, mu + 4*sigma, 1000)","array de 1000 valeurs, utile pour une pdf"],
   ]},
-  {id:"exploration", group:"pandas", title:"Exploration initiale", rows:[
-    ["Voir les premières lignes","df.head()","5 premières lignes"],
-    ["Voir les dernières lignes","df.tail(3)","3 dernières lignes"],
-    ["Dimensions du DataFrame","df.shape","tuple (lignes, colonnes)"],
-    ["Résumé des types et valeurs non nulles","df.info()","affichage console"],
-    ["Stats descriptives","df.describe()","DataFrame de stats (moy, std, min, max...)"],
-    ["Liste des colonnes","df.columns","Index des noms de colonnes"],
-    ["Types des colonnes","df.dtypes","Series type par colonne"],
-    ["Nombre de NaN par colonne","df.isna().sum()","Series (nb de NaN)"],
-    ["Nombre de NaN par colonne (alias)","df.isnull().sum()","identique à isna().sum(), juste un autre nom"],
-    ["Valeurs uniques d'une colonne","df[\"col\"].unique()","array des valeurs distinctes"],
-    ["Fréquence des valeurs","df[\"col\"].value_counts()","Series triée par fréquence"],
+  {id:"lecture", group:"pandas", subgroup:"Import / export données", title:"Lecture / écriture de données", rows:[
+    ["Lire un CSV","**pd.read_csv**(\"fichier.csv\", sep=\",\", encoding=\"utf-8\")","DataFrame"],
+    ["Désactiver la détection auto des valeurs manquantes","pd.read_csv(\"fichier.csv\", **na_filter=False**)","DataFrame — aucune valeur convertie en NaN, même \"NA\", \"null\", \"\" etc. — piège classique : le code pays ISO \"NA\" (Namibie) serait sinon lu comme valeur manquante par défaut"],
+    ["Lire un Excel","**pd.read_excel**(\"fichier.xlsx\", sheet_name=\"Feuille1\")","DataFrame"],
+    ["Lire un Parquet","**pd.read_parquet**(\"fichier.parquet\")","DataFrame"],
+    ["Lire un JSON","**pd.read_json**(\"fichier.json\")","DataFrame"],
+    ["Écrire un CSV","df.**to_csv**(\"sortie.csv\", index=False)","fichier créé, sans colonne d'index"],
+    ["Écrire un Excel","df.**to_excel**(\"sortie.xlsx\", index=False)","fichier créé"],
   ]},
-  {id:"selection", group:"pandas", title:"Sélection", rows:[
-    ["Sélectionner une colonne","df[\"col\"]","Series"],
-    ["Sélectionner plusieurs colonnes","df[[\"col1\", \"col2\"]]","DataFrame"],
-    ["Ligne par position","df.iloc[0]","1ère ligne"],
-    ["Plage de lignes par position","df.iloc[0:5]","5 premières lignes"],
-    ["Ligne par label d'index","df.loc[3]","ligne d'index 3"],
-    ["Valeur précise par label","df.loc[3, \"col\"]","valeur unique"],
+  {id:"construction-pandas", group:"pandas", subgroup:"Import / export données", title:"Construire une Series / un DataFrame from scratch", rows:[
+    ["Créer une Series à partir d'une liste","pd.**Series**([10, 20, 30], index=[\"a\",\"b\",\"c\"])","Series indexée par a/b/c"],
+    ["Créer une Series à partir d'un dict","pd.**Series**({\"a\": 10, \"b\": 20})","Series — les clés du dict deviennent l'index"],
+    ["Créer un DataFrame à partir de listes de listes","pd.**DataFrame**([[1,2],[3,4]], index=[\"r1\",\"r2\"], columns=[\"c1\",\"c2\"])","DataFrame 2x2"],
+    ["Créer un DataFrame à partir d'un dict de listes/Series","pd.**DataFrame**({\"col1\": [1,2,3], \"col2\": [4,5,6]})","DataFrame — chaque clé du dict devient une colonne, alignée sur le même index : un DataFrame est fondamentalement un dict de Series partageant le même index"],
   ]},
-  {id:"filtrage", group:"pandas", title:"Filtrage", rows:[
+  {id:"sourcing-api", group:"pandas", subgroup:"Import / export données", title:"Récupérer des données via une API", rows:[
+    ["Importer requests","import **requests**","-"],
+    ["Requête GET vers une API REST","response = requests.**get**(url, params={\"key\": \"value\"})","objet Response — params est encodé automatiquement en query string dans l'URL"],
+    ["Vérifier le succès de la requête","response.**status_code**","code HTTP : 2xx succès, 4xx erreur côté client (ex: 404 not found), 5xx erreur côté serveur"],
+    ["Récupérer le contenu JSON de la réponse","data = response.**json**()","dict ou liste Python — équivalent de json.loads(response.text)"],
+    ["Paginer une API pour tout récupérer",[
+      {code:"results = []\npage = 1\nwhile True:\n    page_data = requests.**get**(url, params={\"page\": page}).json()\n    if not page_data:\n        break\n    results += page_data\n    page += 1\ndf = pd.DataFrame(results)"}
+    ],"boucle jusqu'à recevoir une page vide — beaucoup d'APIs limitent le nombre de résultats par requête et exposent un paramètre page/offset pour tout récupérer"],
+  ]},
+  {id:"sourcing-scraping", group:"pandas", subgroup:"Import / export données", title:"Scraper une page HTML & choisir un format", rows:[
+    ["Parser le HTML d'une page","from bs4 import BeautifulSoup\nsoup = **BeautifulSoup**(response.text, \"html.parser\")","objet navigable dans l'arbre HTML"],
+    ["Extraire des balises","soup.**find_all**(\"a\", class_=\"result-link\")","liste de balises correspondant au sélecteur (tag + attributs)"],
+    ["Format de sauvegarde pour un gros dataset","df.**to_parquet**(\"fichier.parquet\")  # vs. df.to_csv(...)","Parquet : binaire, compressé, types préservés (int/float/date), bien plus rapide à lire/écrire qu'un CSV — à préférer dès que le dataset devient volumineux ou est réutilisé souvent"],
+  ]},
+  {id:"exploration", group:"pandas", subgroup:"Exploration", title:"Exploration initiale", rows:[
+    ["Voir les premières lignes","df.**head**()","5 premières lignes"],
+    ["Voir les dernières lignes","df.**tail**(3)","3 dernières lignes"],
+    ["Lignes prises au hasard (souvent préféré à head/tail)","df.**sample**(5)","5 lignes aléatoires — head/tail montrent toujours les mêmes lignes (biais si le fichier est trié/groupé), sample donne une vue plus représentative"],
+    ["Sous-échantillon reproductible, sans remise (ex: exploration rapide sur un gros dataset)","df.**sample**(10000, random_state=42)","DataFrame de 10000 lignes distinctes tirées au hasard — random_state fixe le tirage pour obtenir le même résultat à chaque exécution"],
+    ["Tirage avec remise sur une colonne","df[\"col\"].**sample**(10, replace=True)","Series de 10 valeurs tirées au hasard dans la colonne, doublons possibles"],
+    ["Dimensions du DataFrame","df.**shape**","tuple (lignes, colonnes)"],
+    ["Résumé des types et valeurs non nulles","df.**info**()","affichage console — liste chaque colonne avec son type et son nombre de valeurs non nulles"],
+    ["Stats descriptives","df.**describe**()","DataFrame avec, pour chaque colonne numérique : count, mean, std, min, 25%, 50%, 75%, max"],
+    ["Liste des colonnes","df.**columns**","Index des noms de colonnes"],
+    ["Types des colonnes","df.**dtypes**","Series type par colonne"],
+    ["Nombre de NaN par colonne","df.**isna**().sum()","Series (nb de NaN)"],
+    ["Nombre de NaN par colonne (alias)","df.**isnull**().sum()","identique à isna().sum(), juste un autre nom"],
+    ["Nombre de valeurs uniques par colonne","df.**nunique**()","compte le nombre de valeurs uniques de toutes les colonnes"],
+  ]},
+  {id:"exploration-colonnes", group:"pandas", subgroup:"Exploration", title:"Exploration des colonnes", rows:[
+    ["Nombre de valeurs uniques","df[\"col\"].**nunique**()","compte le nombre de valeurs uniques dans la colonne"],
+    ["Valeurs uniques d'une colonne","df[\"col\"].**unique**()","array des valeurs distinctes"],
+    ["Fréquence des valeurs","df[\"col\"].**value_counts**()","Series triée par fréquence"],
+    ["Moyenne d'une colonne","df[\"col\"].**mean**()","scalaire"],
+    ["Médiane d'une colonne","df[\"col\"].**median**()","scalaire — contrairement à la moyenne, robuste aux valeurs extrêmes (outliers)"],
+    ["Écart-type d'une colonne","df[\"col\"].**std**()","scalaire"],
+    ["Asymétrie (skewness) d'une colonne","df[\"col\"].**skew**()","scalaire — 0 si symétrique, >0 asymétrie à droite, <0 à gauche"],
+    ["Aplatissement (kurtosis) d'une colonne","df[\"col\"].**kurtosis**()","scalaire — équivalent à scipy.stats.kurtosis(), directement en méthode pandas"],
+  ]},
+  {id:"index-comprendre", group:"pandas", subgroup:"Index", title:"Comprendre l'index", rows:[
+    ["Labels d'index (lignes) d'un DataFrame/Series","df.**index**","par défaut RangeIndex(start=0, stop=n, step=1) — un simple compteur, pas forcément lié aux données"],
+    ["Labels des colonnes","df.**columns**","aussi un objet Index (même type d'objet que df.index, mais sur l'axe des colonnes)"],
+    ["Vérifier que l'index n'a pas de doublons","df.**index.is_unique**","bool — l'index n'est PAS unique par nature (contrairement à une clé primaire SQL) : rien n'empêche deux lignes de porter le même label sauf si on le vérifie soi-même"],
+    ["Nombre de lignes portant un label donné","(df.index == 0).**sum**()","int — si > 1, plusieurs lignes partagent ce label (df.loc[0] renverrait alors un DataFrame, pas une Series)"],
+  ]},
+  {id:"index-set-reset", group:"pandas", subgroup:"Index", title:"Définir / réinitialiser l'index", rows:[
+    ["Fixer une colonne comme index, en place","df.**set_index**(\"col\", inplace=True)","l'index de df devient la colonne col (col n'est plus une colonne normale) — inverse de reset_index()"],
+    ["Fixer une colonne comme index en refusant les doublons","df.**set_index**(\"col\", verify_integrity=True)","lève une erreur si la colonne choisie contient des valeurs dupliquées, au lieu de laisser passer un index non unique"],
+    ["Réinitialiser l'index (ancien index → colonne)","df.**reset_index**()","DataFrame avec un nouveau RangeIndex propre ; l'ancien index redevient une colonne normale"],
+    ["Réinitialiser l'index en jetant l'ancien","df.**reset_index**(drop=True)","DataFrame avec un nouveau RangeIndex propre ; l'ancien index est perdu (pas remis en colonne) — utile après un filtrage ou un concat pour repartir sur un index 0..n-1 propre"],
+  ]},
+  {id:"selection", group:"pandas", subgroup:"Sélection, filtrage & tri", title:"Sélection", rows:[
+    ["Sélectionner une colonne","df**[\"col\"]**","Series"],
+    ["Sélectionner une colonne — notation par point (raccourci)","df.**col**","Series — équivalent à df[\"col\"], mais seulement si \"col\" est un identifiant Python valide (pas d'espace, ne commence pas par un chiffre) et ne rentre pas en conflit avec une méthode/attribut existant de DataFrame (ex: df.count, df.shape) ; ne fonctionne pas pour créer une nouvelle colonne par assignation (df.nouvelle_col = ... échoue, il faut df[\"nouvelle_col\"] = ...)"],
+    ["Sélectionner plusieurs colonnes","df**[[\"col1\", \"col2\"]]**","DataFrame"],
+    ["Ligne par position","df.**iloc**[0]","1ère ligne"],
+    ["Plage de lignes par position","df.**iloc**[0:5]","5 premières lignes"],
+    ["Ligne par label d'index","df.**loc**[3]","ligne d'index 3"],
+    ["Valeur précise par label","df.**loc**[3, \"col\"]","valeur unique"],
+    ["Plage de lignes par label (bornes incluses des deux côtés)","df.**loc**[3:7]","lignes dont le label d'index va de 3 à 7 INCLUS — contrairement à .iloc[3:7] (borne de fin exclue), .loc inclut la borne de fin"],
+  ]},
+  {id:"tri", group:"pandas", subgroup:"Sélection, filtrage & tri", title:"Tri", rows:[
+    ["Trier par une colonne","df.**sort_values**(\"col\", ascending=False)","DataFrame trié décroissant"],
+    ["Trier par plusieurs colonnes","df.**sort_values**([\"col1\",\"col2\"], ascending=[True, False])","DataFrame trié selon priorités"],
+    ["Piège : le tri ne réordonne pas l'index","df.**sort_values**(\"col\")","les lignes changent de position mais gardent leur label d'origine — l'index n'est plus dans l'ordre 0,1,2... ; ajouter .reset_index(drop=True) si on veut un index propre après tri"],
+  ]},
+  {id:"filtrage", group:"pandas", subgroup:"Sélection, filtrage & tri", title:"Filtrage", rows:[
     ["Opérateurs autorisés dans une condition",[
       {table:"==   égal à\n!=   différent de\n>    strictement supérieur\n>=   supérieur ou égal\n<    strictement inférieur\n<=   inférieur ou égal\n&    ET logique\n|    OU logique\n~    négation (NON)"}
     ],"chaque condition entre parenthèses, avec & | ~ — jamais and / or / not (ne fonctionnent pas sur une Series)"],
-    ["Filtrer sur une condition","df[df[\"col\"] > 10]","lignes où col > 10"],
-    ["Filtrer avec ET","df[(df[\"col1\"] > 10) & (df[\"col2\"] == \"A\")]","lignes vérifiant les deux conditions"],
-    ["Filtrer avec OU","df[(df[\"col1\"] > 10) | (df[\"col2\"] == \"A\")]","lignes vérifiant au moins une condition"],
-    ["Filtrer sur une liste de valeurs","df[df[\"col\"].isin([\"A\", \"B\"])]","lignes où col vaut A ou B"],
-    ["Exclure une liste de valeurs","df[~df[\"col\"].isin([\"A\", \"B\"])]","lignes où col n'est ni A ni B"],
-    ["Filtrer sur un texte contenu","df[df[\"col\"].str.contains(\"texte\", na=False)]","lignes contenant \"texte\""],
-    ["Filtrer en syntaxe lisible","df.query(\"col1 > 10 and col2 == 'A'\")","équivalent au filtrage par masque"],
+    ["Filtrer sur une condition","df**[df[\"col\"] > 10]**","lignes où col > 10"],
+    ["Filtrer avec ET","df[(df[\"col1\"] > 10) **&** (df[\"col2\"] == \"A\")]","lignes vérifiant les deux conditions"],
+    ["Filtrer avec OU","df[(df[\"col1\"] > 10) **|** (df[\"col2\"] == \"A\")]","lignes vérifiant au moins une condition"],
+    ["Filtrer sur une liste de valeurs","df[df[\"col\"].**isin**([\"A\", \"B\"])]","lignes où col vaut A ou B"],
+    ["Exclure une liste de valeurs","df[**~**df[\"col\"].isin([\"A\", \"B\"])]","lignes où col n'est ni A ni B"],
+    ["Filtrer un Index (mêmes opérateurs qu'une Series)","serie.index[~serie.index.**isin**(liste_complete)]","clés de serie.index absentes de liste_complete — ex: repérer les orphelins avant un reindex()"],
+    ["Filtrer sur un texte contenu","df[df[\"col\"].str.**contains**(\"texte\", na=False)]","lignes contenant \"texte\""],
+    ["Filtrer en syntaxe lisible","df.**query**(\"col1 > 10 and col2 == 'A'\")","équivalent au filtrage par masque"],
+    ["Piège : après un filtrage, l'index n'est plus contigu","df**[df[\"col\"] > 0]**","les lignes gardent leur label d'origine — l'index devient un sous-ensemble discontinu (ex: 0,1,3,4,6...), ce n'est plus un RangeIndex propre même s'il ressemble à des entiers croissants ; .reset_index(drop=True) pour repartir sur un index propre"],
   ]},
-  {id:"tri", group:"pandas", title:"Tri", rows:[
-    ["Trier par une colonne","df.sort_values(\"col\", ascending=False)","DataFrame trié décroissant"],
-    ["Trier par plusieurs colonnes","df.sort_values([\"col1\",\"col2\"], ascending=[True, False])","DataFrame trié selon priorités"],
+  {id:"filtrage-pieges", group:"pandas", subgroup:"Sélection, filtrage & tri", title:"Filtrage — Piège", rows:[
+    ["Cas sûr : lecture seule après filtrage, aucune modification prévue","sous_df = df[df[\"col\"] > 10]\nprint(sous_df.**describe**())","aucun risque : tu ne fais que lire, .copy() est inutile"],
+    ["Cas sûr : modifier l'original en une seule étape","df.**loc**[df[\"col\"] > 10, \"autre_col\"] = 0","modification directe et sûre de df, aucune ambiguïté"],
+    ["Piège : sélection puis modification en deux étapes, sans copie","sous_df = df[df[\"col\"] > 10].**copy**()\nsous_df[\"nouvelle_col\"] = 1","avec .copy() : sous_df devient un objet à part entière, le modifier ne touche jamais df\nsans .copy() : ambigu -> SettingWithCopyWarning, pandas ne sait pas si tu voulais modifier df ou créer un objet séparé","sous_df = df[df[\"col\"] > 10]\nsous_df[\"nouvelle_col\"] = 1"],
   ]},
-  {id:"nettoyage", group:"pandas", title:"Nettoyage des données", rows:[
-    ["Supprimer les lignes avec NaN","df.dropna()","DataFrame sans lignes incomplètes"],
-    ["Supprimer si NaN dans une colonne précise","df.dropna(subset=[\"col\"])","DataFrame filtré"],
-    ["Remplacer les NaN par une valeur","df.fillna(0)","DataFrame sans NaN"],
-    ["Remplacer les NaN par la moyenne","df[\"col\"].fillna(df[\"col\"].mean())","Series sans NaN"],
-    ["Supprimer les doublons","df.drop_duplicates()","DataFrame sans lignes dupliquées"],
-    ["Supprimer les doublons sur une colonne","df.drop_duplicates(subset=[\"col\"])","DataFrame filtré"],
-    ["Renommer des colonnes","df.rename(columns={\"ancien\": \"nouveau\"})","DataFrame avec nouveaux noms"],
-    ["Supprimer des colonnes","df.drop(columns=[\"col1\", \"col2\"])","DataFrame sans ces colonnes"],
-    ["Convertir un type de colonne","df[\"col\"] = df[\"col\"].astype(int)","colonne convertie en int"],
+  {id:"pandas-clip", group:"pandas", subgroup:"Sélection, filtrage & tri", title:"Series.clip — borner une colonne", rows:[
+    ["Ramener toutes les valeurs négatives à 0","df[\"col\"].**clip**(lower=0)","Series — plus court que .apply(lambda x: x if x>0 else 0) ou np.where(df[\"col\"]>0, df[\"col\"], 0)"],
+    ["Borner entre deux valeurs","df[\"col\"].**clip**(lower=0, upper=100)","Series bornée des deux côtés"],
   ]},
-  {id:"transformation", group:"pandas", title:"Transformation de colonnes", rows:[
-    ["Créer une colonne à partir de deux autres","df[\"nouvelle\"] = df[\"col1\"] + df[\"col2\"]","nouvelle colonne calculée"],
-    ["Appliquer une fonction à une colonne","df[\"nouvelle\"] = df[\"col\"].apply(lambda x: x * 2)","colonne transformée"],
-    ["Transformer une colonne simplement (opération vectorisée)","df[\"col\"] * 2","plus rapide que .apply(lambda x: x * 2) pour les opérations simples"],
-    ["Remplacer des valeurs (mapping)","df[\"col\"] = df[\"col\"].map({\"A\": 1, \"B\": 2})","valeurs remplacées"],
-    ["Remplacer une valeur exacte par une autre","df[\"col\"] = df[\"col\"].replace(\"OLD\", \"NEW\")","toutes les valeurs égales à OLD deviennent NEW"],
-    ["Remplacer un sous-texte (substring) dans chaque valeur","df[\"col\"] = df[\"col\"].str.replace(\"OLD\", \"NEW\", regex=False)","chaque occurrence du texte OLD remplacée par NEW à l'intérieur des valeurs"],
-    ["Colonne conditionnelle simple","df[\"cat\"] = np.where(df[\"col\"] > 10, \"haut\", \"bas\")","colonne \"haut\"/\"bas\""],
-    ["Calculer une valeur seulement si la condition est vraie, sinon garder la valeur d'origine","df[\"col\"] = np.where(df[\"col\"] > 10, df[\"col\"] + 1, df[\"col\"])","+1 si col > 10, valeur inchangée sinon"],
-    ["Même chose, en ne touchant que les lignes concernées","df.loc[df[\"col\"] > 10, \"col\"] += 1","+1 uniquement sur les lignes où col > 10, le reste n'est pas modifié"],
-    ["Colonne à conditions multiples","df[\"cat\"] = np.select(conditions, choix, default=\"grand\")","colonne selon plusieurs seuils"],
+  {id:"nettoyage", group:"pandas", subgroup:"Transformation", title:"Nettoyage des données", rows:[
+    ["Supprimer les lignes avec NaN","df.**dropna**()","DataFrame sans lignes incomplètes"],
+    ["Supprimer si NaN dans une colonne précise","df.**dropna**(subset=[\"col\"])","DataFrame filtré"],
+    ["Remplacer les NaN par une valeur","df.**fillna**(0)","DataFrame sans NaN"],
+    ["Remplacer les NaN par la moyenne","df[\"col\"].**fillna**(df[\"col\"].mean())","Series sans NaN"],
+    ["Supprimer les doublons","df.**drop_duplicates**()","DataFrame sans lignes dupliquées"],
+    ["Supprimer les doublons sur une colonne","df.**drop_duplicates**(subset=[\"col\"])","DataFrame filtré"],
+    ["Renommer des colonnes","df.**rename**(columns={\"ancien\": \"nouveau\"})","DataFrame avec nouveaux noms"],
+    ["Supprimer des colonnes","df.**drop**(columns=[\"col1\", \"col2\"])","DataFrame sans ces colonnes"],
+    ["Convertir un type de colonne","df[\"col\"] = df[\"col\"].**astype**(int)","colonne convertie en int"],
+    ["Retirer les espaces parasites en début/fin de chaîne","df[\"col\"] = df[\"col\"].str.**strip**()","Series nettoyée — piège classique : un isin()/comparaison qui ne matche rien peut être causé par des espaces invisibles, repérables avec .unique()"],
+    ["Piège : filtrer les valeurs manquantes (NaN). NaN n'est jamais égal à lui-même en Python/numpy (même deux NaN comparés entre eux donnent False), donc comparer avec == ne peut jamais fonctionner pour les repérer — et pire, ça ne renvoie aucune erreur ni aucun warning, juste un résultat vide.","df[df[\"col\"].**isna**()]","lignes où col est NaN","df[df[\"col\"] == np.nan]"],
   ]},
-  {id:"groupby", group:"pandas", title:"Groupby / agrégation", rows:[
-    ["Moyenne par groupe","df.groupby(\"col\").mean()","DataFrame indexé par groupe"],
-    ["Somme d'une colonne par groupe","df.groupby(\"col\")[\"valeur\"].sum()","Series indexée par groupe"],
-    ["Agrégations multiples nommées","df.groupby(\"col\").agg(total=(\"valeur\",\"sum\"), moyenne=(\"valeur\",\"mean\"))","DataFrame avec colonnes nommées"],
-    ["Nombre de lignes par groupe(s)","df.groupby([\"col1\", \"col2\"]).size()","Series du nb de lignes (NaN inclus) — pour compter, c'est size(), pas sum()"],
-    ["Nombre de valeurs non-nulles par groupe, colonne par colonne","df.groupby(\"col\").count()","DataFrame du nb de valeurs non-NaN pour chaque colonne (peut différer de size() s'il y a des NaN)"],
-    ["Repasser en DataFrame \"plat\" après groupby","df.groupby(\"col\").mean().reset_index()","index de groupe redevenu colonne"],
+  {id:"index-add-remove-rows", group:"pandas", subgroup:"Transformation", title:"Ajouter / enlever des lignes", rows:[
+    ["Ajouter une ligne","pd.**concat**([df, pd.DataFrame([{\"col1\": val1, \"col2\": val2}])], ignore_index=True)","concat garde l'index d'origine de chaque morceau — la nouvelle ligne a par défaut un index qui recommence à 0, donc sans ignore_index=True elle peut dupliquer un label déjà présent dans df ; ignore_index=True régénère un RangeIndex propre pour tout le résultat"],
+    ["Ajouter une ligne à un label précis","df.**loc**[len(df)] = [val1, val2]","ajoute une ligne au label len(df) — ne fonctionne proprement que si l'index est déjà un RangeIndex 0..n-1 sans trou, sinon le label choisi peut déjà exister"],
+    ["Supprimer une ligne cible le label, pas la position","df.**drop**(1)","supprime la ligne dont le label d'index vaut 1 — si l'index n'est plus un RangeIndex propre (après un filtrage précédent), ça peut ne pas être la 2e ligne du DataFrame"],
+    ["Supprimer une ligne par position (peu importe son label)","df.**drop**(df.index[1])","supprime la 2e ligne du DataFrame, quel que soit son label — équivalent positionnel de drop(1)"],
+    ["Sélection par label vs par position","df.**loc**[1] / df.**iloc**[1]","loc cherche le label 1 dans l'index (peut échouer ou renvoyer plusieurs lignes si doublon) ; iloc prend toujours la 2e ligne, par position, indépendamment des labels"],
   ]},
-  {id:"fusion", group:"pandas", title:"Fusion / jointures", rows:[
-    ["Jointure sur une clé commune","pd.merge(df1, df2, on=\"cle\", how=\"inner\")","DataFrame fusionné (lignes communes)"],
-    ["Jointure avec clés différentes","pd.merge(df1, df2, left_on=\"cle1\", right_on=\"cle2\", how=\"left\")","toutes les lignes de df1 + correspondances"],
-    ["Empiler des lignes","pd.concat([df1, df2], axis=0)","DataFrame concaténé verticalement"],
-    ["Ajouter des colonnes côte à côte","pd.concat([df1, df2], axis=1)","DataFrame concaténé horizontalement"],
+  {id:"transformation", group:"pandas", subgroup:"Transformation", title:"Transformation de colonnes", rows:[
+    ["Créer une colonne à partir de deux autres","df[\"**nouvelle**\"] = df[\"col1\"] + df[\"col2\"]","nouvelle colonne calculée"],
+    ["Appliquer une fonction à une colonne","df[\"nouvelle\"] = df[\"col\"].**apply**(lambda x: x * 2)","colonne transformée"],
+    ["Transformer une colonne simplement (opération vectorisée)","**df[\"col\"] * 2**","plus rapide que .apply(lambda x: x * 2) pour les opérations simples"],
+    ["Remplacer des valeurs (mapping)","df[\"col\"] = df[\"col\"].**map**({\"A\": 1, \"B\": 2})","valeurs remplacées"],
+    ["Remplacer une valeur exacte par une autre","df[\"col\"] = df[\"col\"].**replace**(\"OLD\", \"NEW\")","toutes les valeurs égales à OLD deviennent NEW"],
+    ["Remplacer un sous-texte (substring) dans chaque valeur","df[\"col\"] = df[\"col\"].str.**replace**(\"OLD\", \"NEW\", regex=False)","chaque occurrence du texte OLD remplacée par NEW à l'intérieur des valeurs"],
+    ["Anti-pattern à reconnaître (et éviter) : boucler ligne par ligne","for index, row in df.**iterrows**():\n    ...","très lent sur un gros DataFrame — préférer une opération vectorisée (df[\"col\"] * 2), .apply(), ou du boolean indexing ; utile seulement pour reconnaître ce pattern dans du code existant, pas pour en écrire"],
+    ["Réordonner les colonnes","df = df**[[\"col3\", \"col1\", \"col2\"]]**","DataFrame avec les colonnes dans l'ordre de la liste — pratique pour remonter des colonnes clés (ex: id) en première position"],
+    ["Arrondir toutes les valeurs numériques","df.**round**(3)","DataFrame avec les valeurs arrondies à 3 décimales"],
   ]},
-  {id:"reshaping", group:"pandas", title:"Reshaping (pivot, melt)", rows:[
+  {id:"transformation-conditionnelle", group:"pandas", subgroup:"Transformation", title:"Transformation conditionnelle", rows:[
+    ["Créer une colonne indicatrice 0/1 à partir d'une condition","df[\"dim_is_five_star\"] = (df[\"review_score\"] == 5).**astype**(int)","colonne de 0/1 — le masque booléen (True/False) se convertit directement en (1/0) avec .astype(int), plus direct qu'un .apply(lambda x: 1 if x==5 else 0)"],
+    ["Colonne conditionnelle simple","df[\"cat\"] = **np.where**(df[\"col\"] > 10, \"haut\", \"bas\")","colonne \"haut\"/\"bas\""],
+    ["Calculer une valeur seulement si la condition est vraie, sinon garder la valeur d'origine","df[\"col\"] = **np.where**(df[\"col\"] > 10, df[\"col\"] + 1, df[\"col\"])","+1 si col > 10, valeur inchangée sinon"],
+    ["Même chose, en ne touchant que les lignes concernées","df.**loc**[df[\"col\"] > 10, \"col\"] += 1","+1 uniquement sur les lignes où col > 10, le reste n'est pas modifié"],
+    ["Colonne à conditions multiples","df[\"cat\"] = **np.select**(conditions, choix, default=\"grand\")","colonne selon plusieurs seuils"],
+  ]},
+  {id:"reshaping", group:"pandas", subgroup:"Transformation", title:"Reshaping (pivot, melt)", rows:[
     ["Tableau croisé dynamique (format long -> large)",[
       {label:"df :"},
       {table:"  magasin mois  ventes\n0   Paris  Jan     100\n1   Paris  Fév     120\n2    Lyon  Jan      80\n3    Lyon  Fév      90"},
-      {code:"df.pivot_table(index=\"magasin\", columns=\"mois\", values=\"ventes\", aggfunc=\"mean\")"}
+      {code:"df.**pivot_table**(index=\"magasin\", columns=\"mois\", values=\"ventes\", aggfunc=\"mean\")"}
     ],[
       {label:"DataFrame :"},
       {table:"mois      Fév  Jan\nmagasin\nLyon       90   80\nParis     120  100"}
@@ -416,60 +775,438 @@ const sections = [
     ["Format large -> long (inverse du pivot)",[
       {label:"df :"},
       {table:"  magasin  Jan  Fév\n0   Paris  100  120\n1    Lyon   80   90"},
-      {code:"df.melt(id_vars=[\"magasin\"], value_vars=[\"Jan\",\"Fév\"],\n        var_name=\"mois\", value_name=\"ventes\")"}
+      {code:"df.**melt**(id_vars=[\"magasin\"], value_vars=[\"Jan\",\"Fév\"],\n        var_name=\"mois\", value_name=\"ventes\")"}
     ],[
       {label:"DataFrame :"},
       {table:"  magasin mois  ventes\n0   Paris  Jan     100\n1    Lyon  Jan      80\n2   Paris  Fév     120\n3    Lyon  Fév      90"}
     ]],
   ]},
-  {id:"dates", group:"pandas", title:"Dates et temps", rows:[
-    ["Convertir en type date","df[\"date\"] = pd.to_datetime(df[\"date\"], format=\"%Y-%m-%d\")","colonne au format datetime"],
-    ["Extraire l'année","df[\"date\"].dt.year","Series d'entiers"],
-    ["Extraire le mois","df[\"date\"].dt.month","Series d'entiers"],
-    ["Extraire le jour de la semaine","df[\"date\"].dt.day_name()","Series de noms de jours"],
-    ["Agréger par mois","df.set_index(\"date\").resample(\"ME\").sum()","DataFrame agrégé mensuellement (fin de mois)"],
+  {id:"dates", group:"pandas", subgroup:"Dates", title:"Dates et temps", rows:[
+    ["Convertir en type date","df[\"date\"] = **pd.to_datetime**(df[\"date\"], format=\"%Y-%m-%d\")","colonne au format datetime"],
+    ["Extraire l'année","df[\"date\"].dt.**year**","Series d'entiers"],
+    ["Extraire le mois","df[\"date\"].dt.**month**","Series d'entiers"],
+    ["Extraire le jour de la semaine","df[\"date\"].dt.**day_name**()","Series de noms de jours"],
+    ["Agréger par mois","df.set_index(\"date\").**resample**(\"ME\").sum()","DataFrame agrégé mensuellement (fin de mois)"],
   ]},
-  {id:"copy-or-not", group:"pieges", title:"Copy or not copy", rows:[
-    ["Lecture seule, aucune modification prévue","sous_df = df[df[\"col\"] > 10]\nprint(sous_df.describe())","aucun risque : tu ne fais que lire, .copy() est inutile"],
-    ["Modifier l'original en une seule étape","df.loc[df[\"col\"] > 10, \"autre_col\"] = 0","modification directe et sûre de df, aucune ambiguïté"],
-    ["Construire un sous-tableau indépendant à modifier ensuite","sous_df = df[df[\"col\"] > 10].copy()\nsous_df[\"nouvelle_col\"] = 1","sous_df est un objet à part entière, modifier sous_df ne touche jamais df"],
-    ["Le piège : sélection puis modification en deux étapes, sans copie","sous_df = df[df[\"col\"] > 10]\nsous_df[\"nouvelle_col\"] = 1","ambigu -> SettingWithCopyWarning : pandas ne sait pas si tu voulais modifier df ou créer un objet séparé"],
+  {id:"pandas-dates-diff", group:"pandas", subgroup:"Dates", title:"Différence entre deux dates : précision", rows:[
+    ["Piège : .dt.days tronque à l'entier (perte de précision)","(df[\"date_livree\"] - df[\"date_achat\"]).**dt.days**","int — arrondit vers le bas, 8.9 jours devient 8 : à éviter si la valeur exacte compte (ex: variable d'entrée d'une régression)"],
+    ["Différence de dates en jours, avec décimales","(df[\"date_livree\"] - df[\"date_achat\"]) / **np.timedelta64**(24, \"h\")","float — ex: 8.9, garde la précision"],
+    ["Équivalent avec pd.Timedelta","(df[\"date_livree\"] - df[\"date_achat\"]) / **pd.Timedelta**(days=1)","float, même résultat que np.timedelta64(24,\"h\"), lisibilité différente"],
   ]},
-  {id:"pieges", group:"pieges", title:"Pièges fréquents", headers:["Explication","Syntaxe","Résultat"], rows:[
-    ["Filtrer les valeurs manquantes (NaN). NaN n'est jamais égal à lui-même en Python/numpy (même deux NaN comparés entre eux donnent False), donc comparer avec == ne peut jamais fonctionner pour les repérer — et pire, ça ne renvoie aucune erreur ni aucun warning, juste un résultat vide.","df[df[\"col\"].isna()]","lignes où col est NaN","df[df[\"col\"] == np.nan]"],
+  {id:"groupby", group:"pandas", subgroup:"Agrégation", title:"Groupby / agrégation", rows:[
+    ["Moyenne par groupe","df.groupby(\"col\").**mean**()","DataFrame indexé par groupe"],
+    ["Somme d'une colonne par groupe","df.groupby(\"col\")[\"valeur\"].**sum**()","Series indexée par groupe"],
+    ["Agrégations multiples nommées","df.groupby(\"col\").**agg**(total=(\"valeur\",\"sum\"), moyenne=(\"valeur\",\"mean\"))","DataFrame avec colonnes nommées"],
+    ["Agrégations multiples, forme dict (équivalente, plus rapide à écrire)","df.groupby(\"col\").**agg**({\"valeur\": \"sum\", \"autre\": \"mean\"})","DataFrame — une colonne par clé du dict, nommée comme la colonne d'origine (pas de renommage possible contrairement à la forme nommée ci-dessus)"],
+    ["Nombre de lignes par groupe(s)","df.groupby([\"col1\", \"col2\"]).**size**()","Series du nb de lignes (NaN inclus) — pour compter, c'est size(), pas count()"],
+    ["Nombre de valeurs non-nulles par groupe, colonne par colonne","df.groupby(\"col\").**count**()","DataFrame du nb de valeurs non-NaN pour chaque colonne (peut différer de size() s'il y a des NaN)"],
+  ]},
+  {id:"pandas-groupby-index", group:"pandas", subgroup:"Agrégation", title:"Groupby : gérer l'index (to_frame, reset_index, reindex)", rows:[
+    ["Nombre de lignes par groupe, en colonne directement nommée","df.groupby(\"order_id\").**size**().**to_frame**(\"number_of_items\").reset_index()","DataFrame à 2 colonnes [\"order_id\", \"number_of_items\"] : .size() (Series) -> .to_frame(nom) (nomme la colonne) -> .reset_index() (l'index de groupe redevient une colonne)"],
+    ["Repasser en DataFrame \"plat\" après groupby","df.groupby(\"col\").mean().**reset_index**()","index de groupe redevenu colonne — même logique utilisée dans to_frame().reset_index() ci-dessus"],
+    ["Combler les groupes absents avec une valeur par défaut","df.groupby(\"col\").size().**reindex**(liste_complete, fill_value=0)","recale la Series sur toutes les clés de liste_complete — les groupes manquants du groupby prennent 0 au lieu d'être absents"],
+    ["Piège : reindex() droppe silencieusement ce qui n'est pas dans la nouvelle liste","serie.**reindex**(liste_complete)","toute clé présente dans serie mais absente de liste_complete disparaît sans avertissement — utile si liste_complete est bien exhaustive, dangereux sinon (incohérence de données, ex: order_id de reviews absent de orders)"],
+  ]},
+  {id:"fusion", group:"pandas", subgroup:"Jointures", title:"Fusion / jointures", rows:[
+    ["Jointure sur une clé commune","**pd.merge**(df1, df2, on=\"cle\", how=\"inner\")","DataFrame fusionné (lignes communes)"],
+    ["Jointure avec clés différentes","**pd.merge**(df1, df2, left_on=\"cle1\", right_on=\"cle2\", how=\"left\")","toutes les lignes de df1 + correspondances"],
+    ["Empiler des lignes","**pd.concat**([df1, df2], axis=0)","DataFrame concaténé verticalement"],
+    ["Ajouter des colonnes côte à côte","**pd.concat**([df1, df2], axis=1)","DataFrame concaténé horizontalement"],
+    ["Piège : concaténer sans régénérer l'index → doublons","pd.**concat**([df1, df2])","chaque morceau garde son propre index d'origine : si df1 et df2 ont tous les deux un label 0, le résultat a deux lignes d'index 0 — utiliser ignore_index=True ou reset_index(drop=True) après pour éviter ça"],
+    ["Forcer une erreur plutôt qu'un doublon silencieux","pd.**concat**([df1, df2], verify_integrity=True)","lève une erreur si le résultat contient des labels d'index dupliqués, au lieu de les laisser passer"],
+  ]},
+  {id:"pandas-anti-join", group:"pandas", subgroup:"Jointures", title:"Anti-jointure — repérer les lignes sans correspondance", rows:[
+    ["Compter les order_id sans review, via une jointure outer","merged = orders[[\"order_id\"]].**merge**(reviews[[\"order_id\",\"review_id\"]], on=\"order_id\", how=\"outer\")\nmerged.**isna**().sum()[\"review_id\"]","nb de order_id qui n'ont trouvé aucune review — how=\"outer\" garde toutes les lignes des deux côtés ; un NaN dans review_id signifie \"pas de review pour cette commande\" (à comparer à l'approche isin()+~ de la section Filtrage, plus directe si on n'a pas besoin des colonnes de droite)"],
+    ["Indicateur explicite de la provenance de chaque ligne après un merge","pd.merge(orders, reviews, on=\"order_id\", how=\"outer\", **indicator=True**)","ajoute une colonne _merge (\"left_only\" / \"right_only\" / \"both\") — utile pour diagnostiquer précisément quelles lignes ne matchent pas de chaque côté"],
+  ]},
+  {id:"scipy-stats", group:"stats", title:"Scipy.stats — lois continues & statistiques", headers:["Nom","Formule","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Importer les fonctions utiles","from scipy.stats import **norm, skew, kurtosis**","-","-"],
+    ["Asymétrie d'une distribution (skewness)","**skew**(array)","-","0 si symétrique, >0 asymétrie à droite, <0 à gauche"],
+    ["Aplatissement d'une distribution (kurtosis)","**kurtosis**(array)","-","proche de 0 pour une gaussienne"],
+    ["Créer une loi Normale N(µ,σ)","**norm**(mu, sigma)","$\\mu$ : moyenne\n$\\sigma$ : écart-type","objet distribution, réutilisable avec .pdf / .cdf"],
+    ["Densité de probabilité (pdf) en un point x","norm(mu, sigma).**pdf**(x)","$x$ : point où évaluer la densité","float ou array — hauteur de la courbe"],
+    ["Fonction de répartition (cdf)","$$F(x) = P(X \\le x)$$\nnorm(mu, sigma).**cdf**(x)","$x$ : valeur seuil\n$X \\sim \\mathcal{N}(\\mu,\\sigma)$","-"],
+    ["Probabilité que X dépasse une valeur","$$P(X>v) = 1 - F(v)$$\n1 - norm(mu, sigma).**cdf**(valeur)","$v$ : valeur seuil\n$X \\sim \\mathcal{N}(\\mu,\\sigma)$","-"],
+    ["cdf de la loi normale centrée réduite N(0,1), à partir d'un z-score","$$\\Phi(z) = P(Z \\le z)$$\nnorm.**cdf**(z)","$z$ : score-z\n$Z \\sim \\mathcal{N}(0,1)$","-"],
+    ["Loi Binomiale(n,p) — raccourci scipy","from scipy.stats import binom\nbinom(n, p).**pmf**(k)","$n$ : nombre d'essais\n$p$ : probabilité de succès\n$k$ : nombre de succès recherché","équivalent scipy de la formule manuelle math.comb(n,k) * p**k * (1-p)**(n-k) (cf. section Maths ▸ Lois de probabilité discrètes) — même logique que norm(mu, sigma) ci-dessus, mais pour une loi discrète"],
+  ]},
+  {id:"ols-fit", group:"regression", title:"Régression linéaire multivariée (OLS) avec statsmodels", headers:["Nom","Formule / Syntaxe","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Modèle de régression multivariée (OLS)","$$y = \\beta_0 + \\beta_1 x_1 + ... + \\beta_p x_p + \\epsilon$$\nimport statsmodels.formula.api as smf\nmodel = smf.**ols**(\"y ~ x1 + x2\", data=df).**fit**()","$y$ : variable cible (dépendante)\n$x_i$ : features (indépendantes)\n$\\beta_i$ : coefficients estimés — $\\beta_0$ est l'Intercept","OLS = Ordinary Least Squares, minimise la MSE (Mean Squared Error) entre prédictions et valeurs réelles ; la formule texte façon R décrit le modèle, .fit() calcule les coefficients"],
+    ["Ce que produit .fit()","model.params\nmodel.**fittedvalues**\nmodel.resid\nmodel.**summary**()","params : Series des $\\beta_i$ estimés, indexée par nom de feature (+ Intercept) — une valeur par feature, pas par ligne\nfittedvalues : $\\hat y$, une valeur par ligne de df\nresid : $y - \\hat y$, une valeur par ligne","fit() renvoie un objet Results complet, pas juste les coefficients — model.fittedvalues donne directement ŷ (les prédictions sur les données d'entraînement, même échelle que y) ; à comparer avec Logit ci-dessous, où fittedvalues n'est PAS sur l'échelle de y"],
+    ["Ajouter une variable catégorielle à la formule","model = smf.ols(\"y ~ x1 + **C(**cat_feature**)**\", data=df).fit()","cat_feature : colonne catégorielle (str)","C() crée une variable indicatrice (dummy 0/1) par catégorie — une modalité sert de référence (dans l'Intercept), les autres apparaissent en coefficients séparés"],
+    ["Standardiser les features avant régression (rendre les coefficients comparables)","df_std = (df[features] - df[features].**mean**()) / df[features].**std**()","features : liste de colonnes numériques","transforme chaque feature en z-score (moyenne 0, écart-type 1, cf. Score-z) — sans ça, les coefficients ne sont pas comparables entre eux à cause des différences d'échelle des variables d'origine"],
+    ["Ajuster un modèle via l'API bas niveau (tableaux plutôt que formule texte)","import statsmodels.api as sm\nmodel = sm.**OLS**(y, X).fit()","y : array/Series cible\nX : DataFrame/array des features","alternative à smf.ols(formula=...) — utile quand X/y sont déjà construits séparément ; contrairement à smf.ols, il faut ajouter l'intercept soi-même avec sm.add_constant(X) (sinon le modèle passe par l'origine)"],
+    ["Supprimer l'intercept dans une formule (un coefficient par catégorie, sans référence)","model = smf.ols(\"y ~ C(cat_feature) **- 1**\", data=df).fit()","-","sans le -1, une modalité sert de référence (absorbée dans l'Intercept) et les autres coefficients représentent des écarts à cette référence ; avec -1, chaque modalité reçoit directement son propre coefficient, égal à sa moyenne"],
+  ]},
+  {id:"ols-summary", group:"regression", title:"Lire le résumé d'une régression (.summary())", headers:["Nom","Formule / Syntaxe","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Afficher le résumé complet du modèle",[
+      {code:"model.**summary**()"},
+      {label:"→ extrait, valeurs fictives :"},
+      {table:"                            OLS Regression Results\n==============================================================================\nDep. Variable:                      y   R-squared:                       0.712\nModel:                            OLS   Adj. R-squared:                  0.706\nMethod:                 Least Squares   F-statistic:                     121.4\n                                        Prob (F-statistic):           3.45e-28\nNo. Observations:                 200   Log-Likelihood:                -410.22\nDf Residuals:                     197   AIC:                             826.4\nDf Model:                            2   BIC:                             836.3\n==============================================================================\n                 coef    std err          t      P>|t|      [0.025      0.975]\n------------------------------------------------------------------------------\nIntercept      4.5678      0.512      8.921      0.000       3.559       5.577\nx1             2.3456      0.187     12.545      0.000       1.977       2.714\nx2            -1.2345      0.298     -4.142      0.000      -1.822      -0.647\n==============================================================================\nOmnibus:                        1.203   Durbin-Watson:                   1.987\nProb(Omnibus):                  0.548   Jarque-Bera (JB):                1.102\nSkew:                           0.145   Prob(JB):                        0.577\nKurtosis:                       2.891   Cond. No.                         12.4\n=============================================================================="}
+    ],"-","tableau texte avec tous les indicateurs détaillés ci-dessous — R-squared / Adj. R-squared / F-statistic / Prob (F-statistic) en haut à droite ; coef/std err/t/P>|t| par feature dans le tableau du milieu ; Omnibus/JB/Skew/Kurtosis/Durbin-Watson/Cond. No. en bas"],
+    ["Accès direct aux valeurs clés (sans repasser par .summary())","model.**rsquared**\nmodel.**resid**","-","rsquared : float ; resid : Series des résidus, équivalent à model.predict(df) - df[\"y\"] mais déjà calculé par statsmodels — formule du R² et pièges d'interprétation détaillés en section Maths ▸ Régression"],
+    ["Condition pour que le R² soit interprétable","-","-","le R² n'a de sens que si le modèle contient un intercept (une colonne de 1 dans X) — smf.ols l'ajoute automatiquement, sm.OLS non (cf. sm.add_constant ci-dessus)"],
+    ["Coefficient, erreur standard, t-value, p-value","**coef** / **std err** / **t** / **P>|t|**","coef : $\\beta_i$ estimé\nt = coef / std err","P>|t| < 0.05 (seuil usuel) ⇒ le coefficient est statistiquement significatif, on rejette $H_0: \\beta_i=0$ (cf. Test d'hypothèse, section Maths) — formule du std err en section Maths ▸ Régression"],
+    ["Intervalle de confiance du coefficient","**[0.025   0.975]**","-","IC 95% de $\\beta_i$ — s'il ne contient pas 0, le coefficient est significatif (cohérent avec sa p-value)"],
+    ["F-statistic / Prob (F-statistic)","-","-","teste si le modèle dans son ensemble est significatif (au moins un $\\beta_i \\ne 0$) — Prob(F-statistic) est la p-value associée, à regarder en premier avant les coefficients individuels"],
+    ["Cond. No. (nombre de conditionnement)","-","-","élevé (ex: >30) ⇒ possible multicolinéarité (deux features très corrélées entre elles), rend les coefficients individuels instables à interpréter isolément — signal global sur l'ensemble du modèle, cf. VIF pour une détection feature par feature"],
+    ["Omnibus / Jarque-Bera (JB) / Skew / Kurtosis / Durbin-Watson","-","-","diagnostics sur les résidus : Omnibus/JB testent leur normalité, Skew/Kurtosis leur forme, Durbin-Watson (≈2 si ok) détecte une autocorrélation — utiles pour valider les hypothèses de l'OLS, mais secondaires par rapport à R² et p-values"],
+  ]},
+  {id:"ols-diagnostics", group:"regression", title:"Prédictions, résidus, RMSE et coefficients significatifs", headers:["Nom","Formule / Syntaxe","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Prédire à partir du modèle","y_pred = model.**predict**(df)","df : mêmes colonnes que celles utilisées pour fit()","applique les coefficients appris aux lignes de df"],
+    ["Résidus","$$\\epsilon_i = \\hat y_i - y_i$$\n**residuals** = y_pred - df[\"y\"]","-","toujours vérifier que residuals.mean() ≈ 0 après un fit OLS — sinon, il y a une erreur dans le calcul ; diagnostics des résidus (hétéroscédasticité, autocorrélation) détaillés en section Maths ▸ Régression"],
+    ["RMSE (Root Mean Squared Error)","$$RMSE = \\sqrt{\\dfrac{1}{n}\\sum_{i=1}^n (\\hat y_i - y_i)^2}$$\nrmse = pow((residuals ** 2).mean(), 0.5)","-","erreur moyenne de prédiction, dans la même unité que y — plus petit = mieux, mais dépend de l'échelle de y (contrairement au R², sans unité)"],
+    ["Récupérer coefficients et p-values du modèle","model.**params**    # Series des coefficients (dont Intercept)\nmodel.**pvalues**   # Series des p-values associées","-","utile pour filtrer/trier les coefficients programmatiquement plutôt que lire .summary() à l'œil"],
+    ["Ne garder que les coefficients statistiquement significatifs","p = model.pvalues.reset_index()\np.columns = [\"variable\",\"p_value\"]\nc = model.params.reset_index()\nc.columns = [\"variable\",\"coef\"]\np.**merge**(c, on=\"variable\").**query**(\"p_value<0.05\").sort_values(\"coef\")","-","pattern utilisé dans olist/utils.py::return_significative_coef — combine pvalues et params par jointure (cf. Fusion/jointures), puis filtre p<0.05"],
+    ["Graphiques de régression partielle (une feature à la fois, effet des autres neutralisé)","import statsmodels.api as sm\nfig = plt.figure(figsize=(10,10))\nsm.graphics.**plot_partregress_grid**(model, fig=fig)","-","visualise, pour chaque feature, sa relation avec y une fois l'effet des autres features retiré — équivalent graphique des partial correlation coefficients (coefficients de la régression multivariée)"],
+    ["Visualiser les résidus pour détecter hétéroscédasticité/autocorrélation","sns.**scatterplot**(x=y_pred, y=residuals)","-","scatter résidus vs. valeurs prédites — motifs à repérer et leur signification détaillés en section Maths ▸ Régression"],
+  ]},
+  {id:"vif", group:"regression", title:"Détecter la multicolinéarité (VIF)", headers:["Nom","Formule / Syntaxe","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Variance Inflation Factor (VIF)","$$VIF(X_k) = \\dfrac{1}{1-R_k^2}$$\nfrom statsmodels.stats.outliers_influence import variance_inflation_factor as vif\n[**vif**(X_scaled.values, i) for i in range(X_scaled.shape[1])]","$R_k^2$ : R² obtenu en régressant $X_k$ sur toutes les autres features\nX_scaled : features standardisées (cf. Standardiser les features avant régression)","détecte la multicolinéarité multivariée (contrairement à la matrice de corrélation, limitée aux paires de variables) — règle empirique : VIF ≥ 10 signale une feature redondante avec les autres, candidate à retirer ou combiner ; s'applique aussi bien à une régression linéaire (OLS) que logistique"],
+  ]},
+  {id:"logit-fit", group:"regression", title:"Régression logistique avec statsmodels", headers:["Nom","Formule / Syntaxe","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Modèle de régression logistique","$$\\hat p = \\dfrac{1}{1+e^{-(\\beta_0+\\beta_1 x_1+...+\\beta_p x_p)}}$$\nimport statsmodels.formula.api as smf\nmodel = smf.**logit**(\"y ~ x1 + x2\", data=df).fit()","$y$ : cible binaire (0/1)\n$\\hat p$ : probabilité prédite d'appartenir à la classe 1\nmême syntaxe formule que smf.ols : C() pour catégorielles, -1 pour retirer l'intercept","fit() maximise la log-vraisemblance par une méthode itérative, pas de solution fermée comme pour OLS (cf. section Maths ▸ Régression)"],
+    ["Ce que produit .fit()","model.params\nmodel.**fittedvalues**\nmodel.**predict**(df)\nmodel.**summary**()","params : Series des $\\beta_i$ estimés, indexée par nom de feature (+ Intercept) — une valeur par feature, pas par ligne\nfittedvalues : le prédicteur linéaire Xβ (log-odds), une valeur par ligne — PAS une probabilité","piège : contrairement à OLS, model.fittedvalues n'est pas sur l'échelle de y ni une probabilité — c'est le log-odds brut, non borné ]-∞,+∞[ ; pour la probabilité (bornée 0-1), il faut model.predict(df) (cf. carte 'chaîne concrète' ci-dessous)"],
+    ["Prédire une classe à partir d'une probabilité","y_pred = (model.**predict**(df) > 0.5).astype(int)","0.5 : seuil de décision par défaut","au-dessus du seuil → classe 1, en dessous → classe 0 ; le seuil peut être ajusté selon le coût respectif des faux positifs / faux négatifs (cf. Erreurs de Type I/II, section Maths)"],
+    ["La chaîne concrète, une valeur PAR LIGNE : de Xβ à la probabilité","$$\\text{odds} = \\dfrac{p}{1-p} \\qquad \\text{logit}(p) = \\log(\\text{odds}) = X\\beta$$\nlogit_p = model.**fittedvalues**        # = X.β, log-odds brut du modèle\np       = model.**predict**(df)          # = sigmoïde(logit_p), la probabilité\nodds    = p / (1 - p)                # = repasse de p aux odds","logit_p, p, odds : trois Series de même longueur que df, un trio de valeurs par ligne — juste 3 façons d'exprimer la même chose","le modèle apprend une droite sur l'échelle logit (comme une régression linéaire classique) ; predict() applique la sigmoïde pour la ramener en probabilité (bornée 0-1, interprétable) ; repasser en odds est optionnel, seulement utile pour retrouver le lien direct avec les coefficients (ligne suivante)"],
+    ["Interpréter un coefficient, une valeur PAR FEATURE : l'effet de βᵢ sur les odds","$$\\text{OR}_i = \\dfrac{\\text{odds}(x_i+1)}{\\text{odds}(x_i)} = e^{\\beta_i}$$\nimport numpy as np\nodds_ratios = np.**exp**(model.params)","$\\beta_i$ : coefficient de $x_i$ (model.params) — effet de +1 unité de $x_i$ sur logit(p), à additionner à Xβ ci-dessus","odds_ratios : Series indexée comme model.params (une valeur par feature + Intercept, pas par ligne) — OR_i (= exp(βᵢ)) est le rapport entre les odds à xᵢ+1 et les odds à xᵢ : le facteur multiplicatif sur les odds pour +1 unité de xᵢ, toutes les autres features fixées ; ex: odds_ratios[\"x1\"]=1.01 ⇒ +1% des odds ; <1 ⇒ effet négatif sur la probabilité de succès"],
+  ]},
+  {id:"logit-summary", group:"regression", title:"Lire le résumé d'une régression logistique (.summary())", headers:["Nom","Formule / Syntaxe","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Afficher le résumé complet du modèle",[
+      {code:"model.**summary**()"},
+      {label:"→ extrait, valeurs fictives :"},
+      {table:"                           Logit Regression Results\n==============================================================================\nDep. Variable:                      y   No. Observations:                  200\nModel:                          Logit   Df Residuals:                      197\nMethod:                           MLE   Df Model:                            2\n                                        Pseudo R-squ.:                  0.2130\n                                        Log-Likelihood:                -98.234\n                                        LL-Null:                       -124.79\n                                        LLR p-value:                 1.234e-12\n==============================================================================\n                 coef    std err          z      P>|z|      [0.025      0.975]\n------------------------------------------------------------------------------\nIntercept     -1.2345      0.321     -3.845      0.000      -1.864      -0.605\nx1             0.6789      0.145      4.682      0.000       0.395       0.963\nx2            -0.3456      0.198     -1.745      0.081      -0.734       0.043\n=============================================================================="}
+    ],"-","tableau texte avec tous les indicateurs détaillés ci-dessous — Pseudo R-squ. / Log-Likelihood / LL-Null en haut à droite ; coef/std err/z/P>|z| par feature dans le tableau du bas (z au lieu de t, cf. ligne ci-dessous) — mêmes emplacements que pour OLS, avec z à la place de t"],
+    ["z au lieu de t","-","-","contrairement à OLS, la variance d'une loi de Bernoulli est connue analytiquement (pas besoin de l'estimer par s) → test z plutôt que t, pas de degrés de liberté à choisir"],
+    ["Log-Likelihood (LL) et Pseudo R²","$$\\text{Pseudo } R^2 = 1 - \\dfrac{LL(\\text{model})}{LL(\\text{null})}$$\nmodel.**llf**        # LL(model)\nmodel.**llnull**     # LL(null)\nmodel.**prsquared**  # Pseudo R²","LL(model) : log-vraisemblance du modèle ajusté\nLL(null) : log-vraisemblance du modèle sans aucune feature (intercept seul)","les 3 sont déjà calculés par statsmodels, pas besoin de les recalculer à la main — accessibles en attributs (llf/llnull/prsquared) ET affichés directement dans l'en-tête de model.summary() (\"Log-Likelihood\", \"LL-Null\", \"Pseudo R-squ.\") ; LL ∈ ]-∞,0], plus proche de 0 = meilleur fit (rôle analogue au SSR pour OLS) ; Pseudo R² ∈ [0,1] permet de comparer des modèles entre eux, mais est moins directement interprétable qu'un vrai R²"],
+    ["Vérifier LL(null) en ajustant soi-même le modèle nul (intercept seul)","model_null = smf.**logit**(\"y ~ 1\", data=df).fit()\nmodel_null.**llf**  # == model.llnull","\"y ~ 1\" : formule sans aucune feature, juste l'intercept","optionnel : sert surtout à vérifier/comprendre d'où vient model.llnull (log-vraisemblance d'un modèle qui ne fait que prédire la fréquence moyenne de y) — la même syntaxe \"y ~ 1\" fonctionne avec smf.ols pour une régression linéaire"],
+    ["Conditions d'inférence allégées vs OLS","-","-","pas besoin de résidus normaux ni de variance constante (homoscédasticité) comme pour OLS — la lecture des p-values et IC des coefficients reste la même"],
+  ]},
+  {id:"ml-workflow", group:"ml", subgroup:"Workflow", title:"Workflow Scikit-learn — de bout en bout (table des matières)", rows:[
+    ["1. Choisir & importer le modèle","-","cf. Choix du modèle — convention Sklearn : jamais import sklearn seul, ni import * — on importe la classe précise depuis son module"],
+    ["2. Explorer","-","cf. Explorer — vérifier NaN, doublons et équilibre des classes avant tout"],
+    ["3. Nettoyer","-","cf. Doublons, Valeurs manquantes, Outliers"],
+    ["4. Séparer train / test AVANT de fitter quoi que ce soit","-","cf. Train/test split, Data Leakage — le split doit précéder le fit du scaler/encoder, sinon data leakage"],
+    ["5. Preprocessing — fit sur train, transform partout","-","cf. Feature Scaling, Encoding — jamais de .fit() sur X_test"],
+    ["6. Valider le modèle par cross-validation (sur train)","-","cf. K-Fold Cross Validation — estime la performance avant de toucher au test set"],
+    ["7. Entraîner puis évaluer sur le test set, jamais vu à l'entraînement","-","cf. Train/test split — métrique par défaut dépendante du modèle (R² pour LinearRegression, accuracy pour LogisticRegression) — à comparer au score de cross-validation de l'étape précédente"],
+    ["8. Diagnostiquer l'écart cross-val vs test","-","cf. Bias/Variance — écart 0-5% normal, 5-10% limite, +10% overfitting"],
+    ["9. Réentraîner sur TOUT le dataset une fois validé","-","cf. Prédictions — une fois le modèle validé (étapes 6-8), on jette le split et on réentraîne sur 100% des données disponibles"],
+    ["10. Prédire sur une donnée nouvelle","-","cf. Prédictions — ne jamais oublier de réappliquer le même preprocessing (scaler déjà fit à l'étape 5, jamais refit) aux nouvelles données"],
+  ]},
+  {id:"ml-models-overview", group:"ml", subgroup:"Choix du modèle", title:"Modèles Sklearn vus — Régression vs Classification", headers:["Nom","Syntaxe","Métrique .score()","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["LinearRegression — régression","from sklearn.linear_model import LinearRegression\nmodel = **LinearRegression**()","R²","target continue (ex: prix) — équivalent Sklearn de smf.ols, sans les p-values/IC (cf. section Régression pour l'inférence statistique)"],
+    ["LogisticRegression — classification","from sklearn.linear_model import LogisticRegression\nmodel = **LogisticRegression**()","accuracy","malgré le nom « regression », c'est un modèle de CLASSIFICATION : target catégorielle (ex: churn oui/non) — prédit une probabilité puis une classe ; équivalent Sklearn de smf.logit (cf. logit-fit pour l'inférence statistique)"],
+    ["Choisir régression vs classification","-","-","target continue → régression ; target catégorielle (classes discrètes) → classification — cf. Discretizing pour transformer l'une en l'autre"],
+  ]},
+  {id:"ml-model-attributes", group:"ml", subgroup:"Choix du modèle", title:"Travailler avec un estimator déjà choisi", rows:[
+    ["Coefficients appris (régression linéaire)","model.**coef_**\nmodel.**intercept_**","pente(s) a et ordonnée à l'origine b — attributs suffixés _ par convention Sklearn (disponibles seulement après fit)"],
+    ["Trouver les valeurs valides d'un paramètre (ex: strategy)","**SimpleImputer?**  # Jupyter : ouvre la docstring\n# ou Shift+Tab dans SimpleImputer(strategy=|)\n# ou provoquer l'erreur exprès :\nSimpleImputer(strategy=\"bogus\").fit([[1],[2]])","le message d'erreur liste les valeurs acceptées : \"... must be a str among {'most_frequent', 'constant', 'median', 'mean'}...\" — marche pour n'importe quel paramètre/classe Sklearn"],
+  ]},
+  {id:"ml-explore", group:"ml", subgroup:"Exploration & Nettoyage", title:"Explorer avant de modéliser", rows:[
+    ["Vérifier NaN, doublons, équilibre des classes","df.**isnull**().sum()\ndf.**duplicated**().sum()\ndf['target'].**value_counts**()","cf. section Pandas ▸ Exploration pour les commandes générales (head, describe, dtypes...) — ici on regarde spécifiquement ce qui impacte un modèle ML"],
+    ["Pourquoi ces 3 vérifications avant tout","-","NaN → un modèle Sklearn ne fit pas avec des NaN (sauf modèles spécifiques) ; doublons → faussent l'évaluation s'ils se répartissent entre train et test (cf. Data Leakage) ; classes déséquilibrées → le modèle apprend mal la classe minoritaire (cf. Balancing)"],
+  ]},
+  {id:"ml-duplicates", group:"ml", subgroup:"Exploration & Nettoyage", title:"Nettoyer — Doublons", rows:[
+    ["Détecter / compter les doublons","df.**duplicated**()          # booléen par ligne\ndf.duplicated().**sum**()    # nombre de doublons","-"],
+    ["Supprimer les doublons","df = df.**drop_duplicates**()","cf. Data Leakage : des lignes dupliquées présentes à la fois en train et en test faussent l'évaluation"],
+  ]},
+  {id:"ml-missing-data", group:"ml", subgroup:"Exploration & Nettoyage", title:"Nettoyer — Valeurs manquantes", rows:[
+    ["Compter les NaN par colonne (nombre / %)","df.**isnull**().sum().sort_values(ascending=False)\ndf.**isnull**().sum() / len(df)   # en proportion","-"],
+    ["Règle empirique pour décider quoi faire","-","> 30% de NaN → envisager de supprimer la feature (ou la ligne) ; < 30% → envisager une imputation adaptée au sens de la colonne"],
+    ["⚠️ NaN ne veut pas toujours dire « donnée manquante »","-","ex: NaN sur une colonne Alley peut signifier « pas d'allée », pas une erreur de mesure — nécessite la connaissance métier du dataset"],
+    ["Imputer avec SimpleImputer","from sklearn.impute import SimpleImputer\nimputer = SimpleImputer(strategy=\"mean\")\nimputer.**fit**(df[['col']])\ndf[['col']] = imputer.**transform**(df[['col']])\nimputer.**statistics_**","strategy : mean, median, most_frequent, constant — .fit() apprend la valeur de remplacement, .transform() l'applique (logique commune à tous les transformers Sklearn) — garder les doubles crochets df[['col']] des DEUX côtés (et pas df['col'] à gauche) marche pour toutes les colonnes, numériques ou catégorielles"],
+    ["Piège (si jamais assigné en simple crochet df['col'])","df['col'] = imputer.transform(df[['col']]).**ravel**()  # ou .flatten()","transform() renvoie toujours un array **2D** (n,1) ; assigné à df['col'] (Series 1D), ça passe silencieusement sur une colonne numérique (pandas squeeze tout seul) mais lève une ValueError sur une colonne texte/objet (ex: most_frequent) — le plus simple est d'éviter le problème en assignant à df[['col']] (double crochets) plutôt que d'ajouter .ravel()"],
+  ]},
+  {id:"ml-outliers", group:"ml", subgroup:"Exploration & Nettoyage", title:"Nettoyer — Outliers", rows:[
+    ["Visualiser les outliers","df[['col']].**boxplot**()\nsns.**boxplot**(data=df, x='col')","-"],
+    ["Supprimer les valeurs clairement fausses","mask = (df['col'] > 0) & (df['col'] < 5000)\ndf = df[mask].**reset_index**(drop=True)","⚠️ un outlier n'est pas toujours une erreur — peut être une observation rare (novelty) ou une feature en soi ; à traiter au cas par cas"],
+  ]},
+  {id:"ml-scaling", group:"ml", subgroup:"Transformation", title:"Feature Scaling (Standard / MinMax / Robust)", headers:["Nom","Formule / Syntaxe","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["StandardScaler (standardiser)","$$z = \\dfrac{x - mean}{std}$$\nfrom sklearn.preprocessing import StandardScaler\nscaler = StandardScaler()\nscaler.**fit**(df[['col']])\ndf[['col']] = scaler.**transform**(df[['col']])","-","centre à 0 (μ=0) et réduit à écart-type 1 (σ=1) — sensible aux outliers ; bon choix par défaut pour la plupart des modèles (ex: régression linéaire, réseaux de neurones) — doubles crochets df[['col']] des deux côtés (cf. piège 2D/1D dans Valeurs manquantes)"],
+    ["MinMaxScaler (normaliser)","$$X' = \\dfrac{X - X_{min}}{X_{max}-X_{min}}$$\nfrom sklearn.preprocessing import **MinMaxScaler**","-","compresse dans [0,1] — préserve la sparsité (0 reste 0), ne réduit pas l'effet des outliers — utile pour features positives/sparse (ex: pixels) ou pour KNN"],
+    ["RobustScaler","$$RobustScaled = \\dfrac{x - median}{IQR}$$\nfrom sklearn.preprocessing import **RobustScaler**","IQR : écart interquartile Q3 − Q1","utilise médiane + IQR au lieu de moyenne + écart-type → moins sensible aux outliers que Standard/MinMax"],
+    ["Fit sur train seulement, transform sur train ET test","scaler.**fit**(X_train)\nX_train = scaler.**transform**(X_train)\nX_test = scaler.**transform**(X_test)  # jamais de .fit() sur X_test","-","cf. Data Leakage — fitter un scaler sur tout le dataset (avant le split) fait fuiter de l'information du test set dans l'entraînement"],
+    ["Réassigner plusieurs colonnes scalées d'un coup, par leur nom","X_train[cols] = scaler.transform(X_train[cols])\nX_train.columns  # ou : scaler.**get_feature_names_out**()","cols : liste de colonnes numériques","évite de retaper les noms de colonnes à la main quand on scale plusieurs features en une seule fois (contrairement à df[['col']] utilisé ci-dessus pour une seule colonne) — même pattern que pour OneHotEncoder (cf. Encoding)"],
+  ]},
+  {id:"ml-encoding", group:"ml", subgroup:"Transformation", title:"Encoding (variables catégorielles)", headers:["Nom","Syntaxe","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["OrdinalEncoder — catégories avec un ordre","from sklearn.preprocessing import OrdinalEncoder\nenc = OrdinalEncoder(categories=[['bad','average','good']])\nenc.**fit**(df[['col']])\nenc.**categories_**\ndf[['col_encoded']] = enc.**transform**(df[['col']])","categories : ordre explicite à préciser, sinon ordre alphabétique par défaut","à utiliser seulement si la variable a un vrai ordre — sinon crée une fausse relation numérique entre catégories"],
+    ["OneHotEncoder — catégories sans ordre","from sklearn.preprocessing import OneHotEncoder\nohe = OneHotEncoder(sparse_output=False)\nohe.**fit**(df[['col']])\ndf[ohe.**get_feature_names_out**()] = ohe.**transform**(df[['col']])\ndf = df.**drop**(columns=['col'])","drop=\"if_binary\" : une seule colonne si la feature n'a que 2 catégories","crée une colonne binaire par catégorie — attention à la cardinalité (curse of dimensionality) sur les colonnes à beaucoup de catégories"],
+    ["LabelEncoder — encoder la target (classification)","from sklearn.preprocessing import LabelEncoder\nle = LabelEncoder().fit(y)\ny_encoded = le.**transform**(y)\nle.**inverse_transform**(y_encoded)  # retour aux labels d'origine","-","souvent inutile : la plupart des modèles Sklearn gèrent une target texte directement — à réserver aux cas où l'encodage/décodage est explicitement nécessaire"],
+  ]},
+  {id:"ml-discretizing", group:"ml", subgroup:"Transformation", title:"Discretizing — pd.cut", rows:[
+    ["Transformer une variable continue en catégories","df['col_bin'] = pd.**cut**(x=df['col'], bins=[min-1, mean, max+1], labels=['low','high'])","bins : n+1 bornes pour n labels — transforme une tâche de régression en tâche de classification (ex: prix → Low/High)"],
+  ]},
+  {id:"ml-balancing", group:"ml", subgroup:"Transformation", title:"Balancing (classes déséquilibrées)", rows:[
+    ["Pourquoi équilibrer","-","une classe sous-représentée est mal apprise par le modèle — un split 70/30 est déjà considéré déséquilibré en classification binaire"],
+    ["Stratégies","-","oversampling (dupliquer / générer la classe minoritaire) ou undersampling (sous-échantillonner la classe majoritaire)"],
+    ["SMOTE (oversampling synthétique)","from imblearn.over_sampling import **SMOTE**  # pip install imbalanced-learn","génère de nouvelles observations minoritaires par combinaison linéaire d'observations existantes"],
+    ["⚠️ Où appliquer le balancing","-","seulement sur le train set, après le split — jamais sur le test set qui doit rester représentatif du monde réel"],
+  ]},
+  {id:"ml-holdout", group:"ml", subgroup:"Test", title:"Train/test split — train_test_split (Holdout Method)", rows:[
+    ["Séparer train / test","from sklearn.model_selection import train_test_split\nX_train, X_test, y_train, y_test = **train_test_split**(X, y, test_size=0.3, random_state=88)","~70/30 usuel — random_state fixe le tirage aléatoire pour la reproductibilité"],
+    ["Piège : scorer un modèle sur ses données d'entraînement","model.fit(X_train, y_train)\nmodel.score(**X_test**, **y_test**)  # jamais X_train, y_train","sinon on mesure la mémorisation, pas la capacité à généraliser sur des données non vues"],
+    ["Limites du Holdout","-","split aléatoire → score qui varie selon le tirage ; perte d'information (les données de test ne servent pas à l'entraînement), surtout gênant sur un petit dataset"],
+  ]},
+  {id:"ml-data-leakage", group:"ml", subgroup:"Test", title:"Train/test split — Data Leakage, piège transversal", rows:[
+    ["Définition","-","information du test set (ou du futur) qui fuite dans l'entraînement, faussant l'évaluation à la hausse"],
+    ["Sources fréquentes","-","doublons partagés entre train/test ; fit d'un scaler/encoder sur tout le dataset avant le split ; oversampling avant le split ; feature dérivée directement de la target (ex: une colonne prix_euros ≈ target convertie dans une autre unité)"],
+    ["Règle générale","transformer.**fit**(X_train)  # jamais X_test ou X entier\nX_train = transformer.**transform**(X_train)\nX_test = transformer.**transform**(X_test)","toute transformation (scaler, encoder, imputer...) doit être fit uniquement sur le train set, puis appliquée (transform) identiquement au train et au test"],
+  ]},
+  {id:"ml-cross-validation", group:"ml", subgroup:"Test", title:"K-Fold Cross Validation", rows:[
+    ["Valider sur K sous-échantillons","from sklearn.model_selection import cross_validate\ncv_results = **cross_validate**(model, X, y, cv=5)\ncv_results['test_score'].mean()","moyenne les scores sur K splits différents plutôt qu'un seul split — plus robuste qu'un simple train_test_split"],
+    ["Choisir K","-","compromis fiabilité / temps de calcul — règle empirique : K=5 ou K=10"],
+    ["⚠️ Ce que cross_validate ne fait pas","-","ne renvoie pas un modèle entraîné : elle ne fait que scorer un modèle hypothétique entraîné sur tout le dataset — pour obtenir un modèle utilisable, il faut ensuite le fit sur l'ensemble des données"],
+    ["Variante : cross_val_score","from sklearn.model_selection import cross_val_score\n**cross_val_score**(model, X, y, cv=5, scoring=\"r2\").mean()","renvoie directement un array de scores (une seule métrique, via scoring) au lieu du dict de cross_validate (test_score, fit_time, ...) — pratique pour un score rapide sans les à-côtés"],
+  ]},
+  {id:"ml-bias-variance", group:"ml", subgroup:"Test", title:"Bias/Variance tradeoff & Learning Curves", rows:[
+    ["Bias (underfitting)","-","le modèle est trop simple pour capter les patterns des données — scores train ET test bas"],
+    ["Variance (overfitting)","-","le modèle capte le bruit en plus du signal — score train haut, score test bas"],
+    ["No Free Lunch Theorem","-","aucun modèle n'est optimal pour tous les problèmes — le choix dépend des hypothèses faites sur les données"],
+    ["Tracer les courbes d'apprentissage","from sklearn.model_selection import learning_curve\ntrain_sizes, train_scores, test_scores = **learning_curve**(estimator=model, X=X, y=y, train_sizes=[...], cv=5)\ntrain_scores.mean(axis=1)  # score moyen train par taille\ntest_scores.mean(axis=1)   # score moyen test par taille","évalue les scores train/test pour des tailles croissantes de training set — diagnostique underfitting / overfitting / besoin de plus de données"],
+    ["Lecture des courbes","-","convergence + plateau haut = idéal ; convergence + plateau bas = underfitting (plus de données n'aidera pas) ; écart persistant train ≫ test = overfitting (plus de données peut aider)"],
+    ["Repère chiffré : écart cross-val vs score sur le test set","cv_results['test_score'].**mean**()  # ex: 0.92, sur train\nmodel.**score**(X_test, y_test)        # ex: 1.0","règle empirique : écart de 0-5% = normal ; 5-10% = ok mais limite ; +10% = overfitting (le modèle a mémorisé le train plutôt que généralisé) — à ajuster selon le contexte, mais donne un premier seuil d'alerte rapide"],
+  ]},
+  {id:"ml-feature-selection", group:"ml", subgroup:"Test", title:"Feature selection — corrélation & permutation importance", rows:[
+    ["Pourquoi sélectionner des features","-","garbage in → garbage out ; curse of dimensionality (plus de features nécessite exponentiellement plus de données pour généraliser) ; modèle plus simple = plus interprétable, plus rapide"],
+    ["Repérer les features redondantes (corrélation univariée)","corr = df.select_dtypes('number').**corr**()\ncorr_df = corr.stack().reset_index()\ncorr_df.columns = ['f1','f2','correlation']","deux features très corrélées entre elles portent une information redondante — envisager d'en retirer une"],
+    ["Piège : exclure la diagonale avant de trier","corr_df = corr_df[corr_df['f1'] **!= corr_df['f2']**]","chaque feature est corrélée à 1.0 avec elle-même — sans ce filtre, la diagonale (corrélation=1) noie le classement dès qu'on trie par force de corrélation"],
+    ["Trier par force de corrélation","corr_df['abs_corr'] = corr_df['correlation'].**abs**()\ncorr_df.sort_values('abs_corr', ascending=False)","sans abs(), une corrélation négative forte (-0.9) passerait après une positive faible (0.5) — trie par force du lien, pas par signe"],
+    ["Multicolinéarité multivariée","-","cf. VIF (Variance Inflation Factor), section Statsmodels & Régression — détecte les redondances qu'une simple matrice de corrélation (limitée aux paires) ne voit pas"],
+    ["Feature Permutation Importance","from sklearn.inspection import permutation_importance\nmodel.fit(X, y)\nresult = **permutation_importance**(model, X, y, n_repeats=10)\nresult.importances_mean","n_repeats (nombre de mélanges aléatoires par feature) : mélange aléatoirement une feature et mesure la chute de score — grosse chute = feature importante, chute nulle/négative = feature peu utile"],
+    ["Éliminer les features faibles et re-valider","weak = importance_df[importance_df['importance_mean'] <= 0]['feature']\nX_reduced = X.**drop**(columns=weak)\ncross_validate(model, X_reduced, y, cv=5)['test_score'].mean()","seuil ≤ 0 : une importance nulle/négative signifie que mélanger la feature n'a pas dégradé (voire a amélioré) le score — comparer au score de base pour vérifier qu'il ne chute pas significativement"],
+  ]},
+  {id:"ml-predictions", group:"ml", subgroup:"Prédictions", title:"Réentraînement final & prédiction sur nouvelle donnée", rows:[
+    ["Pourquoi réentraîner sur tout le dataset","-","le split train/test (cf. Train/test split) et la cross-validation (cf. Test) ne servent qu'à ESTIMER la performance — une fois le modèle validé, on jette le split et on réentraîne sur 100% des données pour obtenir le modèle final le plus informé possible"],
+    ["Réentraîner sur l'ensemble des données","model.**fit**(X, y)  # X, y = dataset complet, pas X_train/y_train","remplace le modèle entraîné sur X_train par un modèle entraîné sur toutes les données disponibles"],
+    ["Prédire sur une donnée nouvelle","new_point_scaled = scaler.transform(new_point)\nmodel.**predict**(new_point_scaled)","ne jamais oublier de réappliquer le même preprocessing (scaler déjà fit pendant l'étape Test, jamais refit) aux nouvelles données avant de prédire"],
+  ]},
+  {id:"plot-base", group:"plot", title:"Matplotlib — graphiques de base", rows:[
+    ["Importer matplotlib","import **matplotlib.pyplot** as plt","-"],
+    ["Diagramme en barres","plt.**bar**(x, y)","graphique à barres"],
+    ["Nuage de points","plt.**scatter**(x=x, y=y, label=\"...\", s=8)","nuage de points, s = taille des points"],
+    ["Courbe / ligne","plt.**plot**(x, y, label=\"...\", color=\"red\")","courbe reliant les points"],
+    ["Ligne horizontale constante (ex: valeur théorique)","plt.**plot**([valeur] * len(y), label=\"...\", color=\"red\")","ligne droite horizontale à hauteur 'valeur'"],
+    ["Afficher le graphique","plt.**show**()","affiche la figure à l'écran"],
+    ["Tracer directement depuis une Series/DataFrame (sans passer par plt.bar/scatter)","serie.**plot**(kind=\"barh\")","graphique en barres horizontales — pratique pour trier et visualiser des coefficients de régression (model.params.sort_values().plot(kind=\"barh\")) ou toute autre Series"],
+  ]},
+  {id:"plot-mise-en-forme", group:"plot", title:"Matplotlib — mise en forme", rows:[
+    ["Définir la taille de la figure","plt.**figure**(figsize=(20, 10))","figure plus grande (largeur, hauteur en pouces)"],
+    ["Titre du graphique","plt.**title**(\"mon titre\")","-"],
+    ["Titre au-dessus de toute la figure (utile avec plt.subplot)","plt.**suptitle**(\"mon titre global\")","-"],
+    ["Titres des axes","plt.**xlabel**(\"x\")\nplt.**ylabel**(\"y\")","-"],
+    ["Limiter un axe pour masquer des outliers (un seul côté possible)","plt.**xlim**(right=70)\nplt.**ylim**(bottom=0)","tronque la vue sans modifier les données — right=/left=/top=/bottom= bornent un seul côté, l'autre reste automatique"],
+    ["Afficher la légende (labels définis dans bar/scatter/plot)","plt.**legend**(loc=\"best\")","légende positionnée automatiquement"],
+  ]},
+  {id:"plot-quadrillage", group:"plot", title:"Matplotlib — quadrillage de sous-graphiques", rows:[
+    ["Grille de sous-graphiques (lignes, colonnes, position)","plt.**subplot**(2, 2, 1)","sélectionne le 1er graphique d'une grille 2x2 — les plt.plot suivants s'y appliquent"],
+    ["Créer une grille de sous-graphiques indépendants (objets Axes)","fig, axes = plt.**subplots**(nrows=2, ncols=3, figsize=(15, 10))\n# cas le plus courant, 2 côte à côte :\nfig, (ax1, ax2) = plt.**subplots**(1, 2, figsize=(12, 5))\nax1.bar(x, y)\nax2.scatter(x, y)","fig = la figure entière, axes = tableau 2D d'objets Axes (ou directement (ax1, ax2) si on dépaquette 1x2)\nfigsize=(largeur, hauteur) en pouces — ex: (12, 5) = plus large que haut, adapté à 2 graphiques côte à côte"],
+    ["Parcourir tous les axes d'une grille","for ax in axes.**flat**:\n    ...","aplatit le tableau 2D d'axes en liste 1D pour boucler dessus"],
+    ["Configurer un axe précis (titre, limites)","ax.**set_title**(f\"n={n}\")\nax.**set_xlim**(0, 40)","équivalent de plt.title / plt.xlim mais appliqué à un axe particulier de la grille"],
+  ]},
+  {id:"sns-usage", group:"plot", title:"Seaborn — jeux de données & distributions", rows:[
+    ["Importer seaborn","import **seaborn** as sns","-"],
+    ["Charger un dataset d'exemple intégré","tips_df = sns.**load_dataset**(\"tips\")","DataFrame (ex: dataset 'tips')"],
+    ["Histogramme rapide, sans import supplémentaire","df.**hist**(\"col\", bins=20)","affiche directement un histogramme matplotlib — pratique en exploration rapide, mais rendu moins soigné que sns.histplot ci-dessous"],
+    ["Histogramme (rendu plus soigné que plt.hist / df.hist)","sns.**histplot**(data, bins=20)","histogramme affiché directement"],
+    ["Histogramme sur un axe précis, avec courbe de densité (KDE)","sns.histplot(data, bins=10, ax=ax, **kde=True**)","ax= dessine dans un sous-graphique particulier (utile avec plt.subplots), kde=True superpose une courbe de densité lissée"],
+    ["Histogramme en densité, avec un pas discret (ex: notes entières, variable 0/1)","sns.**histplot**(df[\"col\"], kde=False, stat=\"density\", discrete=True)","stat=\"density\" normalise l'aire totale à 1 (comparable à une pdf, cf. section Maths) ; discrete=True centre une barre par valeur entière plutôt que des bins continus"],
+    ["Superposer deux distributions pour les comparer (ex: valeurs réelles vs. prédites)","sns.**histplot**(y_true, label=\"actual\", kde=True)\nsns.**histplot**(y_pred, label=\"predicted\", kde=True)\nplt.legend()","deux histogrammes sur le même axe, avec légende — utile pour juger visuellement la qualité d'une régression"],
+    ["Histogramme cumulatif (fonction de répartition empirique)","sns.**histplot**(df[\"col\"], binwidth=5, **cumulative=True**, stat=\"percent\")","cumulative=True cumule les effectifs bin par bin, stat=\"percent\" affiche des % plutôt que des comptes — version empirique/graphique de la cdf théorique (cf. Fonction de répartition, section Maths)"],
+    ["Distributions côte à côte, une par catégorie","g = sns.**FacetGrid**(df, hue=\"dimension\", col=\"dimension\")\ng.map(sns.kdeplot, \"variable\")","une grille de courbes de densité (kde), une par valeur de dimension — pattern utilisé dans olist/utils.py::plot_kde_plot"],
+    ["Compter les occurrences par catégorie","sns.**countplot**(data=df, x=\"categorie\", hue=\"autre_categorie\", stat=\"percent\")","diagramme en barres du nombre de lignes par modalité — hue= ajoute une sous-répartition par couleur, stat=\"percent\" affiche des % plutôt que des comptes bruts"],
+  ]},
+  {id:"sns-comparaison-cat", group:"plot", title:"Seaborn — comparer une distribution par catégorie", rows:[
+    ["Nuage de points coloré par catégorie","sns.**scatterplot**(data=df, x=\"col1\", y=\"col2\", **hue**=\"categorie\")","un point par ligne, coloré selon la modalité de categorie — syntaxe de base à privilégier sur plt.scatter dès qu'il y a une dimension catégorielle à distinguer"],
+    ["Boîte à moustaches (médiane, quartiles, outliers) par catégorie","sns.**boxplot**(data=df, x=\"categorie\", y=\"valeur\", hue=\"autre_categorie\")","une boîte par modalité de categorie — les moustaches représentent $[Q_1-1.5\\,IQR,\\ Q_3+1.5\\,IQR]$, les points au-delà sont les outliers (cf. Écart interquartile, section Maths)"],
+    ["Violon (boxplot + densité KDE combinés)","sns.**violinplot**(data=df, x=\"categorie\", y=\"valeur\")","même info qu'un boxplot mais avec la forme de la distribution en plus (silhouette symétrique = densité kde de chaque côté)"],
+    ["Nuage de points par catégorie (alternative au boxplot pour peu de données)","sns.**stripplot**(data=df, x=\"categorie\", y=\"valeur\")","affiche chaque observation individuelle plutôt qu'un résumé statistique — utile quand il y a peu de points, où un boxplot serait trompeur"],
+  ]},
+  {id:"sns-reg-corr", group:"plot", title:"Seaborn — régression et corrélation", rows:[
+    ["Nuage de points + droite de régression + intervalle de confiance","sns.**regplot**(x=\"col1\", y=\"col2\", data=df, y_jitter=0.3, ci=95)","scatter + droite de régression linéaire, avec un cône ombré = intervalle de confiance (95% par défaut) — y_jitter ajoute du bruit vertical pour mieux voir la densité de points quand y est discret"],
+    ["Matrice de corrélation entre toutes les colonnes numériques","df.**corr**(numeric_only=True)","DataFrame carré (n_cols x n_cols) des coefficients de corrélation de Pearson entre chaque paire de colonnes (cf. Corrélation de Pearson, section Maths)"],
+    ["Visualiser la matrice de corrélation","sns.**heatmap**(df.corr(numeric_only=True), cmap=\"coolwarm\", annot=True)","grille colorée : rouge = corrélation positive forte, bleu = corrélation négative forte ; annot=True affiche les valeurs numériques dans chaque case"],
+  ]},
+  {id:"plotly-scatter", group:"plot", title:"Plotly Express — scatter interactif", rows:[
+    ["Importer plotly express","import **plotly.express** as px","-"],
+    ["Scatter interactif : position, taille et couleur encodent 4 variables à la fois","fig = px.**scatter**(data_frame=df, x=\"col1\", y=\"col2\", size=\"col3\", color=\"col4\", size_max=60, opacity=0.5)\nfig.**show**()","graphique interactif (zoom, survol pour voir les valeurs) — utile en exploration pour repérer des points ou groupes atypiques sans faire un scatter par paire de variables"],
+    ["Courbe interactive (évolution dans le temps)","fig = px.**line**(df, x=\"annee\", y=\"valeur\", color=\"pays\")\nfig.show()","graphique le plus utilisé pour visualiser une série temporelle par catégorie (une courbe par valeur de color) — équivalent interactif de plt.plot / sns.lineplot"],
+    ["Scatter enrichi : marges + droite de régression + label au survol","px.scatter(df, x=\"col1\", y=\"col2\", **marginal_x**=\"histogram\", **marginal_y**=\"box\", **trendline**=\"ols\", **hover_name**=\"pays\")","marginal_x/marginal_y ajoutent un histogramme/boxplot en marge de chaque axe, trendline=\"ols\" superpose une droite de régression, hover_name affiche un libellé personnalisé au survol plutôt que juste (x,y)"],
+  ]},
+  {id:"dash-app", group:"dash", title:"Dash — structure d'une app minimale", rows:[
+    ["Installer Dash","**pip install dash dash-bootstrap-components**","-"],
+    ["Structure minimale d'une app",[
+      {code:"from dash import Dash, html, dcc\n\napp = **Dash**(__name__)\napp.**layout** = [html.H1(\"Titre\"), dcc.Graph(figure=fig)]\n\nif __name__ == \"__main__\":\n    app.**run**(debug=True)"}
+    ],"lance un serveur local sur http://127.0.0.1:8050/ — debug=True recharge l'app automatiquement à chaque modification du fichier"],
+    ["Deux familles de composants","dcc.**Graph**(...), dcc.**Dropdown**(...), dcc.**Slider**(...)   # Dash Core Components\nhtml.**H1**(...), html.**Div**(...), html.**P**(...)            # wrappers HTML","dcc = composants interactifs (graphiques, filtres) ; html = équivalents des balises HTML classiques — ensemble ils composent app.layout"],
+    ["Appliquer un thème Bootstrap","import dash_bootstrap_components as dbc\napp = Dash(external_stylesheets=[dbc.**themes**.BOOTSTRAP])","applique un thème CSS prêt à l'emploi à toute l'app"],
+    ["Grille responsive (12 colonnes)","dbc.**Row**([dbc.**Col**(comp1, width=8), dbc.**Col**(comp2, width=4)])","dispose des composants côte à côte, largeur en douzièmes de la ligne (8+4=12)"],
+  ]},
+  {id:"dash-callback", group:"dash", title:"Dash — interactivité (callbacks) & multi-pages", rows:[
+    ["Callback : relier un composant d'entrée à une sortie",[
+      {code:"**@callback**(\n    Output(\"mon_graph\", \"figure\"),\n    Input(\"mon_dropdown\", \"value\")\n)\ndef update(valeur):\n    filtered = df[df[\"country\"] == valeur]\n    return px.line(filtered, x=\"year\", y=\"co2\", title=f\"CO2 — {valeur}\")"}
+    ],"la fonction décorée se réexécute automatiquement à chaque changement de la valeur du composant Input, et met à jour le composant Output (ici la figure du graphique)"],
+    ["Identifier les composants à relier","dcc.Dropdown(**id=\"mon_dropdown\"**, options=[...])\ndcc.Graph(**id=\"mon_graph\"**)","id= sert de clé pour cibler le composant depuis Output()/Input() dans un callback"],
+    ["Construire dynamiquement les options d'un Dropdown","dcc.**Dropdown**(\n    id=\"mon_dropdown\",\n    options=[{\"label\": c, \"value\": c} for c in df[\"country\"].unique()],\n    **value**=\"France\"\n)","options : liste de dicts {\"label\": texte affiché, \"value\": valeur envoyée au callback}\nvalue= : valeur sélectionnée par défaut au chargement de l'app","pattern courant pour générer les choix à partir des valeurs réellement présentes dans le DataFrame, plutôt que de les écrire à la main"],
+    ["Structurer une app multi-pages","dossier pages/ma_page.py :\ndash.**register_page**(__name__)\nlayout = [...]  # pas de app.layout ici\n\napp = Dash(use_pages=True)\napp.layout = [dash.**page_container**]","chaque fichier de pages/ devient une route automatiquement ; page_container affiche la page active dans le layout principal"],
+    ["Menu de navigation entre les pages","[dcc.**Link**(page[\"name\"], href=page[\"relative_path\"]) for page in dash.**page_registry**.values()]","page_registry : dict rempli automatiquement par register_page() pour chaque page — dcc.Link crée un lien de navigation sans recharger toute l'app (contrairement à un <a> classique)"],
+  ]},
+  {id:"stats-descriptives", group:"math", subgroup:"Statistiques descriptives", title:"Statistiques descriptives (moyenne, dispersion, corrélation)", headers:["Nom","Formule","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Moyenne (population vs échantillon)","$$\\mu = \\dfrac{1}{N}\\sum_{i=1}^{N} x_i \\qquad \\bar x = \\dfrac{1}{n}\\sum_{i=1}^{n} x_i$$\n**np.mean**(data)","$\\mu$ : moyenne de toute la population (N éléments)\n$\\bar x$ : moyenne d'un échantillon (n < N éléments)","même formule, notation différente selon qu'on calcule sur toute la population ou sur un échantillon extrait de cette population"],
+    ["Médiane","$$\\text{Med}(X) = \\begin{cases} x_{(\\frac{n+1}{2})} & \\text{si } n \\text{ impair} \\\\ \\dfrac{1}{2}\\left(x_{(n/2)} + x_{(n/2+1)}\\right) & \\text{si } n \\text{ pair} \\end{cases}$$\n**np.median**(data)","$n$ : nombre de valeurs, données triées par ordre croissant\n$x_{(k)}$ : k-ième valeur une fois triée","n impair, ex: 1 3 3 6 7 8 9 (7 valeurs) → médiane = 6, la valeur du milieu\nn pair, ex: 1 2 3 4 5 6 8 9 (8 valeurs) → médiane = (4+5)/2 = 4.5, moyenne des deux valeurs du milieu\nsépare les données en deux moitiés égales — contrairement à la moyenne, robuste aux valeurs extrêmes (outliers)"],
+    ["Mode","$$\\text{Mode}(X) = \\text{valeur la plus fréquente}$$\n**statistics.mode**(data)  # ou df[\"col\"].mode()","-","il peut y avoir plusieurs modes (distribution bimodale, etc.)"],
+    ["Variance (population)","$$\\sigma^2 = \\dfrac{1}{N}\\sum_{i=1}^{N}(x_i-\\mu)^2$$\n**np.var**(data)  # ddof=0 par défaut","$\\mu$ : moyenne de la population\n$N$ : taille de la population","mesure la dispersion des données autour de la moyenne (en unités au carré)"],
+    ["Écart-type (population)","$$\\sigma = \\sqrt{\\sigma^2}$$\n**np.std**(data)  # ddof=0 par défaut","$\\sigma^2$ : variance de la population","ramène la dispersion dans la même unité que les données (racine carrée de la variance)"],
+    ["Écart-type d'échantillon (correction de Bessel)","$$s = \\sqrt{\\dfrac{1}{n-1}\\sum_{i=1}^{n}(x_i-\\bar x)^2}$$\npd.Series(data).**std**()   # pandas : ddof=1 par défaut\nnp.std(data, **ddof=1**)    # numpy : ddof=0 par défaut, à préciser","$n$ : taille de l'échantillon\n$\\bar x$ : moyenne de l'échantillon","diviser par n sous-estimerait la vraie variance de la population (biais) — diviser par n-1 corrige ce biais. Piège : pandas .std() utilise ddof=1 par défaut, numpy np.std() utilise ddof=0 par défaut — même donnée, résultat différent si on ne fait pas attention"],
+    ["Écart interquartile (IQR) et détection d'outliers","$$IQR = Q_3 - Q_1$$\nq1, q3 = **np.percentile**(data, [25, 75])\niqr = q3 - q1\noutliers = data[(data < q1 - 1.5*iqr) | (data > q3 + 1.5*iqr)]","$Q_1$ : 1er quartile (25e percentile)\n$Q_3$ : 3e quartile (75e percentile)","un point est un outlier s'il sort de $[Q_1 - 1.5\\,IQR,\\ Q_3 + 1.5\\,IQR]$ — c'est la règle utilisée par les moustaches d'un boxplot (sns.boxplot)"],
+    ["Corrélation de Pearson (correspondance linéaire)","$$r = Corr(X,Y) = \\dfrac{\\sum_{i=1}^n (x_i-\\bar x)(y_i-\\bar y)}{n\\,\\sigma_x\\,\\sigma_y}$$\ndf[\"col1\"].**corr**(df[\"col2\"])","$r \\in [-1, 1]$\n$\\sigma_x$, $\\sigma_y$ : écarts-types de X et Y","mesure la dépendance linéaire entre deux variables — X,Y indépendants ⇒ r=0, mais r=0 n'implique PAS indépendant (r ne capture que le lien linéaire, cf. Datasaurus / quartet d'Anscombe : mêmes stats, formes de nuage de points totalement différentes)"],
+  ]},
+  {id:"ensembles-base", group:"math", subgroup:"Probabilités & lois", title:"Théorie des ensembles & probabilités (base)", headers:["Nom","Formule","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Vocabulaire de base d'une expérience aléatoire","-","épreuve (trial) : une réalisation de l'expérience\nissue (outcome) : un résultat possible\nunivers (sample space) $\\Omega$ : l'ensemble de toutes les issues possibles\névénement : un sous-ensemble de $\\Omega$","ex: lancer un dé = expérience, un lancer = épreuve, \"3\" = issue, {1,2,3,4,5,6} = univers $\\Omega$, \"obtenir un nombre pair\" = événement"],
+    ["Union de deux événements","$$P(A \\cup B) = P(A) + P(B) - P(A \\cap B)$$\n**p_union** = p_a + p_b - p_a_inter_b","$A$, $B$ : événements","on retire $P(A \\cap B)$ car sinon la zone commune serait comptée deux fois"],
+    ["Événements incompatibles (disjoints)","$$P(A \\cup B) = P(A) + P(B)$$\n**p_union** = p_a + p_b","$A \\cap B = \\emptyset$","cas particulier de l'union quand A et B ne peuvent pas arriver en même temps"],
+    ["Complémentaire","$$P(\\overline{A}) = P(A^c) = 1 - P(A)$$\n**p_not_a** = 1 - p_a","$\\overline{A}$, $A^c$ : \"non A\", le contraire de A","toute la probabilité restante hors de A"],
+    ["Lois de De Morgan (négation d'une union/intersection)","$$\\overline{A \\cup B} = \\overline{A} \\cap \\overline{B} \\qquad \\overline{A \\cap B} = \\overline{A} \\cup \\overline{B}$$\n**~(a | b) == (~a & ~b)**","$A$, $B$ : événements (ou masques booléens)","utile pour réécrire une condition niée sur un DataFrame, ex: df[~((df.col1>10)&(df.col2==\"A\"))] devient df[(df.col1<=10)|(df.col2!=\"A\")]"],
+    ["Intersection de deux événements indépendants","$$P(A \\cap B) = P(A) \\cdot P(B)$$\n**p_inter** = p_a * p_b","$A$, $B$ : événements indépendants — A n'influence pas B","ex: deux jets de dé sont indépendants (voir juste en dessous si ce n'est pas le cas)"],
+    ["Règle du produit (chain rule)","$$P(A \\cap B) = P(A \\mid B)\\,P(B) = P(B \\mid A)\\,P(A)$$\n**p_inter** = p_a_sachant_b * p_b","$A$, $B$ : événements quelconques (indépendants ou non)","ex: deux tirages de carte sans remise sont dépendants — cette formule reste valable même si A et B ne sont pas indépendants, contrairement à la ligne du dessus"],
+    ["Probabilité conditionnelle","$$P(A \\mid B) = \\dfrac{P(A \\cap B)}{P(B)}$$\n**p_a_sachant_b** = p_a_inter_b / p_b","$P(A \\mid B)$ : proba de A sachant que B est déjà réalisé\n$P(B) > 0$ (sinon la division n'est pas définie)","restreint l'univers à B, puis regarde la part de A dedans"],
+    ["Loi des probabilités totales","$$P(B) = \\sum_i P(B \\mid A_i)\\,P(A_i)$$\n**sum**(p_b_sachant_a[i] * p_a[i] for i in range(n))","$\\{A_i\\}$ : partition de l'univers (scénarios disjoints qui couvrent tous les cas, ex: malade / sain)","sert à calculer P(B) quand on ne peut pas le mesurer directement, en le reconstruisant à partir des probas conditionnelles par scénario (plus faciles à estimer) — c'est précisément le dénominateur utilisé dans Bayes, page suivante"],
+    ["Différence de deux ensembles (dans A mais pas dans B)","$$A \\setminus B = A \\cap \\overline{B}$$","$A$, $B$ : ensembles (ou événements)","à ne pas confondre avec le complémentaire $\\overline{A}$ (qui retire tout A, sans référence à B) : $A \\setminus B$ ne retire de A que la partie commune avec B"],
+    ["Partition de l'univers (notion)","-","$\\{A_i\\}$ : sous-ensembles disjoints ($A_i \\cap A_j = \\emptyset$ pour $i \\ne j$) dont l'union couvre tout $\\Omega$ ($\\bigcup_i A_i = \\Omega$)","déjà utilisée implicitement ci-dessus dans la loi des probabilités totales — chaque scénario $A_i$ est mutuellement exclusif des autres, et leur ensemble couvre tous les cas possibles"],
+  ]},
+  {id:"bayes-naive-bayes", group:"math", subgroup:"Probabilités & lois", title:"Théorème de Bayes", headers:["Nom","Formule","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Théorème de Bayes","$$P(A \\mid B) = \\dfrac{P(B \\mid A)\\,P(A)}{P(B)}$$\n(se déduit de la conditionnelle en y substituant la règle du produit / chaînage, page précédente)\n**p_a_sachant_b** = (p_b_sachant_a * p_a) / p_b","$P(A)$ : prior (proba de A avant d'observer B)\n$P(B \\mid A)$ : vraisemblance\n$P(A \\mid B)$ : posterior (proba de A après avoir observé B)\n$P(B) > 0$ (sinon la division n'est pas définie)","permet d'inverser une conditionnelle : passer de P(B|A) (facile à estimer) à P(A|B) (ce qu'on veut vraiment). Le P(B) du dénominateur pouvant souvent se calculer via la loi des probabilités totales"],
+    ["Inférence bayésienne : mettre à jour une croyance (prior → posterior)","$$p(H \\mid \\text{data}) \\propto p(\\text{data} \\mid H) \\, p(H)$$","$p(H)$ : prior, croyance sur H avant d'avoir vu les données\n$p(\\text{data}\\mid H)$ : vraisemblance des données observées si H était vrai\n$p(H\\mid\\text{data})$ : posterior, croyance mise à jour après avoir vu les données","ex: on lance une pièce n=10 fois pour estimer sa probabilité de faire face H — on observe $\\bar x=0.7$\nsans prior (ou prior uniforme) : la vraisemblance domine, posterior ≈ $\\mathcal{N}(0.7,\\, s/\\sqrt n)$, et 0.7 est le MLE (Maximum Likelihood Estimate)\navec un prior informatif (ex: on pense la pièce probablement équilibrée, $p(H)=\\mathcal{N}(0.5, 0.3)$) : Bayes combine prior et vraisemblance pour obtenir un posterior entre les deux — plus on a de données, moins le prior pèse face à la vraisemblance"],
+    ["MLE vs MAP : deux façons d'estimer un paramètre","$$\\text{MLE} = \\arg\\max_H\\ p(\\text{data}\\mid H) \\qquad \\text{MAP} = \\arg\\max_H\\ p(H\\mid\\text{data})$$","MLE (Maximum Likelihood Estimate) : sommet de la vraisemblance $p(\\text{data}\\mid H)$\nMAP (Maximum A Posteriori) : sommet du posterior $p(H\\mid\\text{data})$","le MLE ignore le prior (ne regarde que les données) ; le MAP tient compte du prior — avec un prior plat (non informatif), MAP = MLE ; plus le prior est informatif, plus MAP s'écarte du MLE en se rapprochant du prior"],
+  ]},
+  {id:"combinatoire", group:"math", subgroup:"Probabilités & lois", title:"Combinatoire (factorielle, combinaisons)", headers:["Nom","Formule","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Importer le module standard","import **math**","-","-"],
+    ["Factorielle de n","$$n! = 1\\times2\\times...\\times n$$\n**math.factorial**(n)","$n$ : entier ≥ 0","nombre de façons d'ordonner (permuter) un n-uplet de n éléments distincts"],
+    ["Nombre d'arrangements de k parmi n (sélection ordonnée, sans répétition)","$$A_n^k = \\dfrac{n!}{(n-k)!}$$\n**math.perm**(n, k)","$n$ : taille de l'ensemble\n$k$ : nombre d'éléments choisis (k ≤ n)","n possibilités pour le 1er élément choisi, n-1 pour le 2e, ..., n-k+1 pour le k-ième → $n\\times(n-1)\\times...\\times(n-k+1)$\nil manque $(n-k)!$ pour retrouver $n!$"],
+    ["Nombre de combinaisons de k parmi n (choix non ordonné, sans répétition)","$$\\dbinom{n}{k} = \\dfrac{A_n^k}{k!} = \\dfrac{n!}{k!\\,(n-k)!}$$\n**math.comb**(n, k)","$n$ : taille de l'ensemble\n$k$ : nombre d'éléments choisis (k ≤ n)","Arrangement = Permutation × Combinaison"],
+    ["Nombre total de résultats pour n tirages à 2 issues (pile/face)","$$2^n$$\n2 ** n","$n$ : nombre de tirages","ex: $2^4 = 16$ combinaisons possibles"],
+    ["Probabilité d'un événement","$$P = \\dfrac{\\text{possibilités favorables}}{\\text{possibilités totales}}$$\n**possibilites_favorables / possibilites_totales**","-","-"],
+  ]},
+  {id:"variable-aleatoire", group:"math", subgroup:"Probabilités & lois", title:"Variable aléatoire (définition)", headers:["Nom","Formule","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Variable aléatoire","$$X : \\Omega \\to \\mathbb{R}$$","$\\Omega$ : univers (ensemble des issues possibles)\n$X$ : fonction qui associe un nombre réel à chaque issue","formalise le passage d'une issue qualitative (ex: \"pile\") à une valeur numérique manipulable (ex: 1) ; le support (range) de X = l'ensemble de ses valeurs possibles"],
+    ["PMF (Probability Mass Function) — variable discrète","$$pmf_X(x_i) = P(X = x_i)$$","$x_i$ : une valeur possible de X (variable discrète)","généralise la notation \"P(X=k)\" utilisée pour Bernoulli/Binomiale/Géométrique (page suivante) — équivalent discret de la pdf (densité) utilisée pour une variable continue (cf. Loi normale)"],
+  ]},
+  {id:"lois-discretes", group:"math", subgroup:"Probabilités & lois", title:"Lois de probabilité discrètes", headers:["Nom","Formule","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Espérance d'une variable aléatoire (valeur moyenne théorique)","$$\\mathbb{E}[X] = \\sum_{x} x \\cdot P(X=x)$$\n**sum**([x * p for x, p in zip(values, probas)])","$x$ : une valeur possible de X\n$P(X=x)$ : probabilité de cette valeur","moyenne théorique des valeurs de X, pondérée par leur probabilité — le résultat \"attendu en moyenne\" si on répète l'expérience un grand nombre de fois (cf. LGN)"],
+    ["Loi de Bernoulli(p) : une expérience, 2 issues (succès/échec)","$$P(\\text{succès}) = p$$\n$$P(\\text{échec}) = 1-p$$","$p$ : probabilité de succès ($p \\in [0,1]$)","succès et échec sont complémentaires"],
+    ["Loi Binomiale(n,p) : proba d'obtenir exactement k succès sur n essais","$$P(X=k) = \\dbinom{n}{k}\\,p^k(1-p)^{n-k}$$\n**math.comb**(n, k) * pow(p, k) * pow(1-p, n-k)","$n$ : nombre d'essais\n$p$ : probabilité de succès par essai ($p \\in [0,1]$)\n$k$ : nombre de succès recherché (0 ≤ k ≤ n)","$p^k(1-p)^{n-k}$ : probabilité d'un tirage particulier (ex: k succès puis n-k échecs), qu'on multiplie par $\\dbinom{n}{k}$, le nombre de combinaisons possibles de k succès parmi n essais"],
+    ["Espérance d'une Binomiale(n,p)","$$\\mathbb{E}[X] = np$$\n**n * p**","$n$ : nombre d'essais\n$p$ : probabilité de succès","indique le nombre de succès attendu en moyenne sur n essais\nex: n=10, p=0.7 → E[X] = 7"],
+    ["Loi Géométrique(p) : proba de réussir pour la 1ère fois au n-ième essai","$$P(X=n) = (1-p)^{n-1}\\,p$$\n((1 - p) ** (n - 1)) * p","$p$ : probabilité de succès à chaque essai ($p \\in (0,1]$, un $p=0$ signifierait qu'on ne réussit jamais)\n$n$ : rang du 1er succès (n ≥ 1)","$(1-p)^{n-1}$ : probabilité de n-1 échecs consécutifs, multipliée par $p$, la probabilité du succès qui suit\ndécroît de façon exponentielle avec n"],
+  ]},
+  {id:"loi-normale", group:"math", subgroup:"Inférence statistique", title:"Loi normale, LGN & Théorème Central Limite", headers:["Nom","Formule","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Densité de probabilité (pdf) d'une loi Normale N(µ,σ)","$$\\mathcal{N}(\\mu,\\sigma) := f_{\\mu,\\sigma}(x) = \\dfrac{1}{\\sigma\\sqrt{2\\pi}}\\,e^{-\\frac{1}{2}\\left(\\frac{x-\\mu}{\\sigma}\\right)^2}$$\nnorm(mu, sigma).**pdf**(x)","$x$ : point où évaluer la densité\n$\\mu$ : moyenne\n$\\sigma$ : écart-type ($\\sigma > 0$)","sert à tracer la courbe en cloche et calculer sa hauteur en un point x (ce n'est pas directement une probabilité)\non note $X \\sim \\mathcal{N}(\\mu,\\sigma)$ pour dire que X suit cette loi, càd que sa densité est $f(x)$"],
+    ["Moyenne d'échantillon","$$\\bar X = \\dfrac{1}{n}\\sum_{i=1}^{n} X_i$$\nsamples.**mean**()","$n$ : nombre d'observations\n$X_i$ : valeur de la i-ème observation","moyenne calculée sur un échantillon de n observations tirées au hasard"],
+    ["Loi des Grands Nombres (LGN)","$$\\bar X \\xrightarrow[n\\to\\infty]{} \\mathbb{E}[X]$$\nsamples.**mean**()  # se rapproche de E[X] quand len(samples) augmente","$\\bar X$ : moyenne d'un échantillon de taille n\n$\\mathbb{E}[X]$ : espérance théorique (espérance et variance doivent être finies pour que la LGN s'applique)","garantit que $\\bar X$ se rapproche de la vraie espérance théorique quand on multiplie les observations\nla moyenne empirique converge vers l'espérance théorique"],
+    ["Théorème Central Limite (TCL)","$$\\bar X \\approx_{n\\to\\infty} \\mathcal{N}\\!\\left(\\mu, \\dfrac{\\sigma}{\\sqrt{n}}\\right)$$\n[data.**sample**(n, replace=True).mean() for _ in range(N)]  # ≈ norm(mu, sigma / np.sqrt(n))","$\\bar X$ : moyenne d'un échantillon de taille n\n$\\mu$ : moyenne de la population\n$\\sigma$ : écart-type de la population (doit être fini pour que le TCL s'applique)","quelle que soit la loi des $X_i$, l'approximation par une loi Normale s'affine quand n augmente (écart-type $\\sigma/\\sqrt n$ de plus en plus petit)"],
+    ["Loi Normale Centrée Réduite N(0,1)","$$\\mathcal{N}(0,1) := f_{0,1}(z) = \\dfrac{1}{\\sqrt{2\\pi}}\\,e^{-\\frac{1}{2}z^2}$$\nnorm.**pdf**(z)","$z$ : point où évaluer la densité","version simplifiée de $\\mathcal{N}(\\mu,\\sigma)$ obtenue en posant $\\mu=0$ et $\\sigma=1$"],
+    ["Score-z (nb d'écarts-types par rapport à la moyenne)","$$z = \\dfrac{x-\\mu}{\\sigma}$$\n**z** = (x - mu) / sigma","$x$ : valeur observée\n$\\mu$ : moyenne\n$\\sigma$ : écart-type ($\\sigma > 0$, sinon la division n'est pas définie)","sert à standardiser une observation pour la comparer à une loi Normale centrée réduite N(0,1) et en déduire une probabilité"],
+    ["Probabilité à partir du z-score","$$\\Phi(z) = P(Z \\le z) = \\displaystyle\\int_{-\\infty}^{z} f_{0,1}(t)\\,dt$$\nnorm.**cdf**(z)","$z$ : score-z calculé\n$Z \\sim \\mathcal{N}(0,1)$","aire sous la courbe de $\\mathcal{N}(0,1)$ jusqu'à z : c'est la probabilité cumulée $P(Z \\le z)$"],
+  ]},
+  {id:"intervalle-confiance", group:"math", subgroup:"Inférence statistique", title:"Intervalle de confiance", headers:["Nom","Formule","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Intervalle de confiance pour μ","$$\\mu = \\bar x \\pm z^* \\dfrac{\\sigma}{\\sqrt n}$$\nfrom scipy.stats import norm\nmu_estim = norm(x_bar, sigma / np.sqrt(n))\nlower = mu_estim.**ppf**((1 - confidence) / 2)\nupper = mu_estim.**ppf**((1 + confidence) / 2)","$\\bar x$ : moyenne observée sur l'échantillon (notre meilleure estimation ponctuelle de μ, le MLE)\n$z^*$ : quantile associé au niveau de confiance choisi\n$\\sigma$ : écart-type de la population (ou $s$ si inconnu)","s'appuie directement sur le TCL (page précédente) : $\\bar X \\approx \\mathcal{N}(\\mu, \\sigma/\\sqrt n)$, donc $\\mu$ est probablement proche de $\\bar x$, à $z^*\\sigma/\\sqrt n$ près\nex: n=1000, x̄=170cm, s=20cm → IC95% = [168.7, 171.2]cm"],
+    ["Interprétation correcte d'un IC à 95%","-","-","✅ \"si on répétait l'échantillonnage plein de fois, 95% des intervalles construits contiendraient la vraie valeur μ\"\n❌ PAS \"il y a 95% de chances que μ soit dans cet intervalle\" — μ n'est pas aléatoire, c'est une valeur fixe (inconnue), c'est l'intervalle qui varie d'un échantillon à l'autre"],
+    ["Niveaux de confiance usuels (repères)",[
+      {table:"1σ (68%)   \"likely\"\n90%        \"very likely\"\n2σ (95%)   \"extremely likely\"\n3σ (99.7%) \"virtually certain\"\n5σ         seuil de \"preuve\" en physique théorique"}
+    ],"-","-"],
+    ["Taille d'échantillon n suffisante pour appliquer le TCL","-","-","n > 30 → le TCL s'applique, on peut utiliser l'écart-type d'échantillon s pour approximer σ\nn > 10 ET données non skewed / sans outliers → le TCL s'applique encore\npopulation déjà connue comme normale → le TCL s'applique quel que soit n, même très petit\n(à part : n < 10% × N pour pouvoir considérer les tirages indépendants même sans remise)"],
+  ]},
+  {id:"test-hypothese", group:"math", subgroup:"Inférence statistique", title:"Test d'hypothèse (p-value)", headers:["Nom","Formule","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Hypothèse nulle et hypothèse alternative","$$H_0 \\text{ (hypothèse par défaut, \"rien ne change\")} \\qquad H_a \\text{ (ce qu'on cherche à démontrer)}$$","$H_0$ : hypothèse nulle\n$H_a$ : hypothèse alternative","ex: $H_0$: μ=300s (le mode sombre ne change rien) — $H_a$: μ>300s (le mode sombre augmente le temps passé)"],
+    ["A/B test : vocabulaire","-","-","nom donné en pratique (produit/data) à un test d'hypothèse appliqué à une expérience : control group (groupe témoin, ne reçoit pas le changement) vs. treatment group (groupe traitement, reçoit le changement) — étapes : (1) assigner aléatoirement les utilisateurs aux deux groupes, (2) comparer les résultats avec un test d'hypothèse classique (H0/Ha, p-value)"],
+    ["p-value","$$\\text{p-value} = P(\\bar X \\ge \\text{valeur observée} \\mid H_0 \\text{ vraie})$$\nfrom scipy.stats import norm\nX = norm(mu0, sigma / np.sqrt(n))\np_value = 1 - X.**cdf**(valeur_observee)","$\\mu_0$ : valeur de μ supposée par $H_0$","probabilité d'observer un résultat au moins aussi extrême que celui mesuré, EN SUPPOSANT que $H_0$ est vraie — ce n'est PAS la probabilité que $H_0$ soit vraie (piège d'interprétation classique)"],
+    ["Règle de décision","$$\\text{p-value} < \\alpha \\Rightarrow \\text{on rejette } H_0 \\text{ au profit de } H_a$$\n$$\\text{p-value} > \\alpha \\Rightarrow \\text{on ne rejette pas } H_0$$","$\\alpha$ : seuil de significativité, choisi AVANT l'expérience (souvent 0.05)","\"on ne rejette pas $H_0$\" ne veut pas dire \"on accepte $H_0$\" — on manque juste de preuve pour la rejeter\nne jamais changer $\\alpha$ après coup pour faire pencher la décision dans le sens voulu"],
+    ["Erreurs de Type I / Type II et Puissance","$$\\text{Puissance} = 1 - \\beta$$","Type I (faux positif) : rejeter $H_0$ alors qu'elle est vraie, proba = $\\alpha$\nType II (faux négatif) : ne pas rejeter $H_0$ alors qu'elle est fausse, proba = $\\beta$","Puissance = proba de détecter un effet réel quand il existe vraiment (ex: ne pas passer à côté d'une feature qui marche, ou d'un médicament efficace) — plus elle est grande, mieux c'est"],
+  ]},
+  {id:"t-test", group:"math", subgroup:"Inférence statistique", title:"t-test (petits échantillons)", headers:["Nom","Formule","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Pourquoi pas un z-test ?","-","-","le z-score $Z=\\frac{\\bar X-\\mu}{\\sigma/\\sqrt n}$ suppose $\\sigma$ (écart-type de la population) connu — si $n$ est petit et $\\sigma$ inconnu, on doit l'estimer par $s$ (écart-type d'échantillon), ce qui rend l'approximation par $\\mathcal{N}(0,1)$ imprécise"],
+    ["Statistique t","$$T = \\dfrac{\\bar X - \\mu}{s/\\sqrt n} \\sim T_{n-1}$$\nfrom scipy.stats import t\nT_stat = (x_bar - mu0) / (s / n**0.5)","$s$ : écart-type d'échantillon (avec correction de Bessel, page \"Statistiques descriptives\")\n$n-1$ : degrés de liberté","même construction que le z-score, mais en remplaçant $\\sigma$ (inconnu) par son estimation $s$ — cette substitution introduit une incertitude supplémentaire, d'où une loi différente (Student) plutôt que Normale"],
+    ["Loi de Student $T_\\nu$","-","$\\nu$ : degrés de liberté (une distribution différente par valeur de $\\nu$)","queues plus \"épaisses\" que la loi Normale (plus de chances d'observer une valeur extrême) — $T_\\nu \\to \\mathcal{N}(0,1)$ quand $\\nu\\to\\infty$ : avec beaucoup de données, t-test et z-test convergent\naccessible via scipy.stats.t"],
+    ["Utilisation pratique","-","-","une fois $T$ à la place de $Z$, tout le reste fonctionne pareil : intervalle de confiance via la cdf de Student, p-value et décision du test — il faut juste bien choisir le nombre de degrés de liberté ($n-1$)"],
+  ]},
+  {id:"ols-theorie-fermee", group:"math", subgroup:"Régression", title:"Régression linéaire (OLS) — solution mathématique", headers:["Nom","Formule","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Écriture matricielle du modèle","$$Y = X\\beta + u$$","$Y$ : vecteur cible (n×1)\n$X$ : matrice des features (n×p), avec une colonne de 1 pour l'intercept\n$\\beta$ : coefficients à estimer (p×1)\n$u$ : erreurs résiduelles","forme matricielle équivalente à la formule texte \"y ~ x1 + x2 + ...\" (cf. statsmodels, section Régression)"],
+    ["Solution exacte (minimise la somme des carrés des résidus)","$$\\hat\\beta = (X^\\top X)^{-1} X^\\top Y$$","$(X^\\top X)^{-1}$ : inverse de la matrice $X^\\top X$","obtenue en annulant la dérivée de $\\|u\\|^2$ par rapport à $\\beta$ — c'est ce calcul que .fit() effectue en interne, pas de descente de gradient nécessaire pour l'OLS"],
+    ["Condition d'existence de la solution","-","$rank(X)$ : rang de la matrice X","$(X^\\top X)^{-1}$ n'existe que si X est de rang plein, i.e. rank(X) = nombre de features — sinon (features parfaitement colinéaires), pas de solution unique pour β ; vérifiable avec np.linalg.matrix_rank(X), à relier au Cond. No. de .summary()"],
+  ]},
+  {id:"ols-theorie-r2", group:"math", subgroup:"Régression", title:"Régression linéaire (OLS) — R² et diagnostic des résidus", headers:["Nom","Formule","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["R-squared (variance expliquée)","$$R^2 = 1 - \\dfrac{\\sum (y_i - \\hat y_i)^2}{\\sum (y_i - \\bar y)^2}$$","$\\hat y_i$ : valeur prédite\n$\\bar y$ : moyenne de y","proportion de la variance de y expliquée par le modèle — Adj. R-squared pénalise l'ajout de features inutiles, à préférer pour comparer deux modèles avec un nombre de features différent"],
+    ["R² : ce que ça mesure vraiment","-","-","compare le modèle à la prédiction naïve \"toujours la moyenne\" : R²=1 (parfait), R²=0 (aussi bon que la moyenne) — et R² peut être négatif si le modèle est pire que prédire juste la moyenne (ex: sur de nouvelles données, en overfitting)"],
+    ["Piège : R² et corrélation en régression multivariée","-","-","en régression simple (une seule feature), R² = Corr(X,Y)² — mais en régression multivariée, cette égalité ne tient plus : le R² dépend de l'ensemble des features et de leurs corrélations croisées, pas d'une seule corrélation isolée"],
+    ["Erreur standard d'un coefficient (régression simple)","$$se(\\beta_1) = \\dfrac{1}{\\sqrt{n-2}} \\cdot \\dfrac{s_{résidus}}{s_x}$$","$s_{résidus}$ : écart-type des résidus\n$s_x$ : écart-type de la feature x","explique la colonne \"std err\" de .summary() (section Régression) — plus les résidus sont dispersés (mauvais fit) ou x peu varié, plus l'incertitude sur $\\beta_1$ est grande"],
+    ["Hétéroscédasticité (variance des résidus non constante)","-","-","motif en \"entonnoir\" sur un scatter résidus vs. valeurs prédites (la dispersion des résidus croît/décroît avec la prédiction) — invalide l'hypothèse de variance constante de l'OLS : le R² reste valide, mais les p-values et IC des coefficients ne sont plus fiables"],
+    ["Résidus autocorrélés / motif non aléatoire","-","-","si les résidus suivent un motif visible (au lieu d'un nuage sans structure) vs. les prédictions ou dans le temps, ça signale une variable explicative manquante — pistes : ajouter des features, transformer y (ex: log), ou changer de famille de modèle ; Durbin-Watson (cf. .summary(), section Régression) détecte spécifiquement l'autocorrélation temporelle"],
+  ]},
+  {id:"logit-theorie", group:"math", subgroup:"Régression", title:"Régression logistique — MLE et log-vraisemblance", headers:["Nom","Formule","Params","Explication"], colClasses:["col-nom","col-formule","col-params","col-explication"], rows:[
+    ["Vraisemblance (likelihood) d'un modèle de Bernoulli","$$L(\\beta) = \\prod_{i=1}^n \\hat p_i^{\\,y_i}(1-\\hat p_i)^{1-y_i}$$","$y_i \\in \\{0,1\\}$ : classe réelle de l'observation i\n$\\hat p_i$ : probabilité prédite par le modèle pour l'observation i","produit des probabilités de Bernoulli de chaque observation — contrairement à OLS (minimiser une somme de carrés), la régression logistique n'a pas de solution fermée : les coefficients sont estimés en maximisant cette vraisemblance (MLE, cf. Théorème de Bayes), par une méthode itérative"],
+    ["Log-vraisemblance (ce qu'on maximise en pratique)","$$\\log L(\\beta) = \\sum_{i=1}^n \\Big(y_i\\log \\hat p_i + (1-y_i)\\log(1-\\hat p_i)\\Big)$$","-","maximiser le log plutôt que le produit direct transforme un produit de petits nombres (instable numériquement) en somme, sans changer l'argmax — la version à minimiser de cette expression (son opposé) est la log-loss, utilisée comme fonction de coût pour entraîner un classifieur en ML"],
   ]},
 ];
 
-const groupLabels = {numpy:"Numpy", pandas:"Pandas", pieges:"Pièges"};
+const groupLabels = {numpy:"Numpy", pandas:"Pandas", math:"Maths &amp; Probabilités", plot:"Matplotlib &amp; Seaborn", stats:"Scipy.stats", regression:"Statsmodels &amp; Régression", ml:"Scikit-learn (Machine Learning)", dash:"Dash (Dashboarding)"};
 const navGroupsEl = document.getElementById('nav-groups');
 const mainEl = document.getElementById('main');
 
 let currentGroup = null;
+let currentSubgroup = null;
 let groupWrapper = null;
+let itemsWrapper = null;
+let subItemsWrapper = null;
+
+function toggleGroup(wrapper){
+  wrapper.classList.toggle('collapsed');
+}
 
 sections.forEach((sec, i) => {
   if (sec.group !== currentGroup){
     currentGroup = sec.group;
-    groupWrapper = document.createElement('div');
-    groupWrapper.className = 'nav-group';
+    currentSubgroup = null;
+    subItemsWrapper = null;
+    const thisGroupWrapper = document.createElement('div');
+    thisGroupWrapper.className = 'nav-group collapsed';
     const label = document.createElement('div');
     label.className = 'nav-group-label ' + sec.group;
-    label.innerHTML = '<span class="dot"></span>' + groupLabels[sec.group];
-    groupWrapper.appendChild(label);
-    navGroupsEl.appendChild(groupWrapper);
+    label.innerHTML = '<span class="dot"></span><span class="label-text">' + groupLabels[sec.group] + '</span><span class="chevron">▾</span>';
+    label.addEventListener('click', () => toggleGroup(thisGroupWrapper));
+    thisGroupWrapper.appendChild(label);
+    const thisItemsWrapper = document.createElement('div');
+    thisItemsWrapper.className = 'nav-group-items';
+    thisGroupWrapper.appendChild(thisItemsWrapper);
+    navGroupsEl.appendChild(thisGroupWrapper);
+    groupWrapper = thisGroupWrapper;
+    itemsWrapper = thisItemsWrapper;
   }
+  if (sec.subgroup && sec.subgroup !== currentSubgroup){
+    currentSubgroup = sec.subgroup;
+    const thisSubgroupWrapper = document.createElement('div');
+    thisSubgroupWrapper.className = 'nav-subgroup collapsed';
+    const subLabel = document.createElement('div');
+    subLabel.className = 'nav-subgroup-label ' + sec.group;
+    subLabel.innerHTML = '<span class="label-text">' + sec.subgroup + '</span><span class="chevron">▾</span>';
+    subLabel.addEventListener('click', () => toggleGroup(thisSubgroupWrapper));
+    thisSubgroupWrapper.appendChild(subLabel);
+    const thisSubItemsWrapper = document.createElement('div');
+    thisSubItemsWrapper.className = 'nav-subgroup-items';
+    thisSubgroupWrapper.appendChild(thisSubItemsWrapper);
+    itemsWrapper.appendChild(thisSubgroupWrapper);
+    subItemsWrapper = thisSubItemsWrapper;
+  } else if (!sec.subgroup){
+    currentSubgroup = null;
+    subItemsWrapper = null;
+  }
+  const targetWrapper = subItemsWrapper || itemsWrapper;
   const btn = document.createElement('button');
   btn.className = 'nav-item ' + sec.group;
   btn.dataset.target = sec.id;
-  const idxSpan = document.createElement('span');
-  idxSpan.className = 'idx';
-  idxSpan.textContent = String(i).padStart(2,'0');
   const titleSpan = document.createElement('span');
   titleSpan.textContent = sec.title;
-  btn.appendChild(idxSpan);
   btn.appendChild(titleSpan);
   btn.addEventListener('click', () => showSection(sec.id));
-  groupWrapper.appendChild(btn);
+  targetWrapper.appendChild(btn);
 
   const panel = document.createElement('section');
   panel.className = 'panel';
@@ -479,7 +1216,7 @@ sections.forEach((sec, i) => {
   header.className = 'panel-header';
   const eyebrow = document.createElement('div');
   eyebrow.className = 'panel-eyebrow ' + sec.group;
-  eyebrow.innerHTML = '<span class="dot"></span>' + groupLabels[sec.group] + ' · section ' + String(i).padStart(2,'0');
+  eyebrow.innerHTML = '<span class="dot"></span>' + groupLabels[sec.group];
   const h2 = document.createElement('h2');
   h2.textContent = sec.title;
   header.appendChild(eyebrow);
@@ -488,16 +1225,24 @@ sections.forEach((sec, i) => {
 
   const table = document.createElement('table');
   const thead = document.createElement('thead');
-  const [h1, h2label, h3] = sec.headers || ["Objectif", "Syntaxe", "Résultat"];
-  thead.innerHTML = '<tr><th>' + h1 + '</th><th>' + h2label + '</th><th>' + h3 + '</th></tr>';
+  const headers = sec.headers || ["Objectif", "Syntaxe", "Résultat"];
+  const colClasses = sec.colClasses || ["col-objectif", "col-syntaxe", "col-resultat"];
+  thead.innerHTML = '<tr>' + headers.map(h => '<th>' + h + '</th>').join('') + '</tr>';
   const tbody = document.createElement('tbody');
+
+  function escapeHtml(str){
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function setCodeHtml(el, text){
+    el.innerHTML = escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  }
 
   function renderContent(container, content){
     if (Array.isArray(content)){
       content.forEach(seg => {
         if (seg.code !== undefined){
           const code = document.createElement('code');
-          code.textContent = seg.code;
+          setCodeHtml(code, seg.code);
           container.appendChild(code);
         } else if (seg.table !== undefined){
           const tableBlock = document.createElement('div');
@@ -513,41 +1258,38 @@ sections.forEach((sec, i) => {
       });
     } else if (container.classList.contains('col-syntaxe')) {
       const code = document.createElement('code');
-      code.textContent = content;
+      setCodeHtml(code, content);
       container.appendChild(code);
+    } else if (container.classList.contains('col-params')) {
+      content.split('\n').forEach(line => {
+        const div = document.createElement('div');
+        div.className = 'param-line';
+        div.textContent = line;
+        container.appendChild(div);
+      });
     } else {
-      container.textContent = content;
+      setCodeHtml(container, content);
     }
   }
 
   sec.rows.forEach((row) => {
-    const [objectif, syntaxe, resultat, broken] = row;
     const tr = document.createElement('tr');
+    const broken = row.length > headers.length ? row[row.length - 1] : undefined;
 
-    const tdObj = document.createElement('td');
-    tdObj.className = 'col-objectif';
-    tdObj.dataset.label = h1;
-    tdObj.textContent = objectif;
+    headers.forEach((label, idx) => {
+      const td = document.createElement('td');
+      td.className = colClasses[idx] || ('col-c' + idx);
+      td.dataset.label = label;
+      if (idx === 1 && broken){
+        const brokenCode = document.createElement('code');
+        brokenCode.className = 'broken-code';
+        setCodeHtml(brokenCode, broken);
+        td.appendChild(brokenCode);
+      }
+      renderContent(td, row[idx]);
+      tr.appendChild(td);
+    });
 
-    const tdSyn = document.createElement('td');
-    tdSyn.className = 'col-syntaxe';
-    tdSyn.dataset.label = h2label;
-    if (broken){
-      const brokenCode = document.createElement('code');
-      brokenCode.className = 'broken-code';
-      brokenCode.textContent = broken;
-      tdSyn.appendChild(brokenCode);
-    }
-    renderContent(tdSyn, syntaxe);
-
-    const tdRes = document.createElement('td');
-    tdRes.className = 'col-resultat';
-    tdRes.dataset.label = h3;
-    renderContent(tdRes, resultat);
-
-    tr.appendChild(tdObj);
-    tr.appendChild(tdSyn);
-    tr.appendChild(tdRes);
     tbody.appendChild(tr);
   });
   table.appendChild(thead);
@@ -563,6 +1305,12 @@ function showSection(id){
   document.querySelectorAll('.panel').forEach(el => {
     el.classList.toggle('active', el.id === 'panel-' + id);
   });
+  const activeBtn = document.querySelector('.nav-item[data-target="' + id + '"]');
+  if (activeBtn){
+    activeBtn.closest('.nav-group').classList.remove('collapsed');
+    const subgroupEl = activeBtn.closest('.nav-subgroup');
+    if (subgroupEl) subgroupEl.classList.remove('collapsed');
+  }
   window.location.hash = id;
   mainEl.scrollTo(0,0);
   window.scrollTo(0,0);
@@ -570,6 +1318,135 @@ function showSection(id){
 
 const initial = window.location.hash ? window.location.hash.slice(1) : sections[0].id;
 showSection(sections.some(s => s.id === initial) ? initial : sections[0].id);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script>
+  renderMathInElement(mainEl, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "$", right: "$", display: false},
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ],
+    throwOnError: false
+  });
+</script>
+
+<script>
+(function(){
+  const searchInput = document.getElementById('search-input');
+  const prevBtn = document.getElementById('search-prev');
+  const nextBtn = document.getElementById('search-next');
+  const countEl = document.getElementById('search-count');
+
+  let searchMarks = [];
+  let currentIndex = -1;
+
+  function escapeRegExp(s){
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function clearMarks(){
+    searchMarks.forEach(mark => {
+      const parent = mark.parentNode;
+      if (!parent) return;
+      parent.replaceChild(document.createTextNode(mark.textContent), mark);
+      parent.normalize();
+    });
+    searchMarks = [];
+    currentIndex = -1;
+  }
+
+  function highlightNode(node, pattern){
+    const text = node.nodeValue;
+    const regex = new RegExp(pattern, 'gi');
+    regex.lastIndex = 0;
+    if (!regex.test(text)) return;
+    regex.lastIndex = 0;
+    const frag = document.createDocumentFragment();
+    let lastIndex = 0, m;
+    while ((m = regex.exec(text))){
+      if (m.index > lastIndex) frag.appendChild(document.createTextNode(text.slice(lastIndex, m.index)));
+      const mark = document.createElement('mark');
+      mark.className = 'search-mark';
+      mark.textContent = m[0];
+      frag.appendChild(mark);
+      searchMarks.push(mark);
+      lastIndex = m.index + m[0].length;
+    }
+    if (lastIndex < text.length) frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+    node.parentNode.replaceChild(frag, node);
+  }
+
+  function buildMarks(query){
+    const pattern = escapeRegExp(query);
+    const walker = document.createTreeWalker(mainEl, NodeFilter.SHOW_TEXT, {
+      acceptNode(node){
+        if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        const p = node.parentElement;
+        if (!p || p.closest('.katex') || p.closest('script,style')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    const nodes = [];
+    let n;
+    while ((n = walker.nextNode())) nodes.push(n);
+    nodes.forEach(node => highlightNode(node, pattern));
+  }
+
+  function updateCount(){
+    const hasQuery = searchInput.value.trim().length > 0;
+    countEl.textContent = searchMarks.length ? (currentIndex + 1) + '/' + searchMarks.length : (hasQuery ? '0/0' : '');
+    prevBtn.disabled = nextBtn.disabled = searchMarks.length === 0;
+  }
+
+  function goTo(idx){
+    if (!searchMarks.length) return;
+    if (currentIndex >= 0 && searchMarks[currentIndex]) searchMarks[currentIndex].classList.remove('current');
+    currentIndex = ((idx % searchMarks.length) + searchMarks.length) % searchMarks.length;
+    const mark = searchMarks[currentIndex];
+    mark.classList.add('current');
+    const panel = mark.closest('.panel');
+    if (panel && !panel.classList.contains('active')){
+      showSection(panel.id.replace('panel-', ''));
+    }
+    mark.scrollIntoView({behavior: 'smooth', block: 'center'});
+    updateCount();
+  }
+
+  function runSearch(){
+    clearMarks();
+    const q = searchInput.value.trim();
+    if (!q){ updateCount(); return; }
+    buildMarks(q);
+    if (searchMarks.length) goTo(0); else updateCount();
+  }
+
+  searchInput.addEventListener('input', runSearch);
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter'){
+      e.preventDefault();
+      goTo(currentIndex + (e.shiftKey ? -1 : 1));
+    } else if (e.key === 'Escape'){
+      searchInput.value = '';
+      clearMarks();
+      updateCount();
+      searchInput.blur();
+    }
+  });
+  prevBtn.addEventListener('click', () => goTo(currentIndex - 1));
+  nextBtn.addEventListener('click', () => goTo(currentIndex + 1));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement !== searchInput &&
+        !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)){
+      e.preventDefault();
+      searchInput.focus();
+    }
+  });
+})();
 </script>
 
 </body>
