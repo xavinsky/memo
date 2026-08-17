@@ -1,0 +1,3780 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MemorIA — Aide-mémoire Data Science &amp; IA</title>
+<script>
+(function(){
+  var z = parseFloat(localStorage.getItem("memo-zoom"));
+  if (!z || isNaN(z)) z = 1;
+  document.documentElement.style.zoom = z * 1.2;
+})();
+// Thème (clair/sombre) appliqué avant le premier rendu — évite un flash de la mauvaise teinte.
+// Choix explicite persisté dans localStorage "memo-theme" ; sans choix explicite, suit
+// prefers-color-scheme (géré côté CSS par le bloc @media, cf. :root[data-theme]).
+(function(){
+  var t = localStorage.getItem("memo-theme");
+  if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t);
+})();
+</script>
+<!-- Polices système (Palatino/Georgia/mono système, cf. skill style-html-generation) : pas de
+     chargement Google Fonts nécessaire. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<style>
+  :root{
+    /* ---- Palette rapprochée du skill style-html-generation : accent + 4 secondaires ---- */
+    --accent: #345AB2;
+    --sec1: #009DA8;
+    --sec2: #2A9F56;
+    --sec3: #F86F32;
+    --sec4: #FB9E4E;
+
+    /* Zone principale — teinte claire dérivée de l'accent (équivalent "surface2" du template) */
+    --bg: #EEF1FB;
+
+    /* Les 3 tons de l'accent (mécanisme menuH/menuL du skill, reference.html ▸ tonalShades()) :
+       foncé (deep), moyen (mid), clair (bright) — réutilisés tels quels pour le menu horizontal
+       ET le menu vertical, seule la répartition des tons par état diffère entre les deux
+       (menuH lit sombre : repos=deep ; menuL lit clair : repos=bright, actif=deep). */
+    --tone-deep: #1D3877;
+    --tone-mid: #2D5789;
+    --tone-bright: #D2DCF4;
+
+    /* Menu horizontal (topnav) — la barre porte le ton deep ; au repos les onglets sont
+       transparents (texte clair adouci, cf. #dash .nav ul a du skill), survol=mid, actif=bright. */
+    --sidebar-bg: var(--tone-deep);
+    --topnav-tab-active-bg: var(--tone-bright);
+    --topnav-tab-active-text: #172033; /* texte sombre, contraste sur le ton clair */
+
+    /* Menu vertical (sidebar) — prépondérance inversée : repos=bright (fond du panneau),
+       survol=mid, actif/sélectionné=deep (cf. #dash .side du skill). */
+    --sidebar-panel-bg: var(--tone-bright);
+    --sidebar-surface: #FFFFFF;      /* champs/puces/boutons au repos sur le panneau clair */
+    --sidebar-hover: var(--tone-mid);
+    --sidebar-active: var(--tone-deep);
+    --sidebar-text: #4C5A82;         /* texte au repos sur panneau clair */
+    --sidebar-text-active: #FFFFFF;  /* texte sur état survol/actif (fond sombre) */
+    --ink: #172033;
+    --muted: #6B7686;
+    --line: #E1E5EE;
+
+    /* ---- Tons dérivés des 5 couleurs de palette (color-mix) — pour ne jamais avoir besoin
+       d'une teinte hors palette (fond pâle "soft" / texte foncé "dark" / neutre gris-bleu) ---- */
+    --accent-soft: color-mix(in srgb, var(--accent) 10%, white);
+    --sec1-soft: color-mix(in srgb, var(--sec1) 10%, white);
+    --sec2-soft: color-mix(in srgb, var(--sec2) 10%, white);
+    --sec3-soft: color-mix(in srgb, var(--sec3) 10%, white);
+    --sec4-soft: color-mix(in srgb, var(--sec4) 12%, white);
+    --accent-dark: color-mix(in srgb, var(--accent) 72%, black);
+    --sec1-dark: color-mix(in srgb, var(--sec1) 72%, black);
+    --sec2-dark: color-mix(in srgb, var(--sec2) 72%, black);
+    --sec3-dark: color-mix(in srgb, var(--sec3) 72%, black);
+    --sec4-dark: color-mix(in srgb, var(--sec4) 60%, black);
+    --muted-soft: color-mix(in srgb, var(--muted) 35%, white);
+    --surface-tint: #FAFBFE; /* off-blanc neutre unique (remplace #FAFBFD/#FAFBFE dupliqués) */
+
+    /* ---- Accents fixes d'une page/carte précise (pas un cyclage par sujet de contenu — cf.
+       style-tech.md ▸ "Couleurs de groupe de contenu", système retiré le 2026-08-21) ---- */
+    --code-tint: var(--accent-soft);
+    --result-tint: var(--sec4-soft);
+    --lex: var(--accent);       /* page Lexique */
+    --data: var(--accent);      /* cartes "sources de données" (Références) */
+    --tab-code: var(--sec1);    /* page Code — bouton "Copier", toggle */
+    --font-display: "Palatino Linotype", Palatino, "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", Charter, serif;
+    --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    /* cadres carrés : contour = ombre douce plutôt qu'une bordure fine */
+    --shadow-card: 0 5px 16px color-mix(in srgb, var(--ink) 14%, transparent);
+    --shadow-bar: 0 6px 18px rgba(0,0,0,0.28);
+  }
+
+  /* ---------- Mode sombre (2026-08-21) — mêmes principes que le skill style-html-generation,
+     reference.html, une fois son propre mode sombre stabilisé : noir plat pour la coque/canevas/
+     menus (plus de teinte dérivée de l'accent), cartes en gris neutre subtil au-dessus de ce noir,
+     texte de menu ET lignes de séparation en "Accent Clair", couleur de rôle (accent/secX) au ton
+     "Moyen" de la Palette plutôt que la couleur brute (trop terne sur fond noir). Les tons Foncé/
+     Moyen/Clair de chaque couleur reprennent tels quels les valeurs réglées à la main dans
+     reference.html (cf. SKILL.md ▸ "Exception en mode sombre", DEFAULTS.darkTierL) — mêmes hex,
+     pour que memo et skill restent visuellement cohérents. Bascule via #theme-toggle (attribut
+     data-theme, persisté dans localStorage "memo-theme") ; à défaut de choix explicite, suit
+     prefers-color-scheme. ---------- */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --accent: #84A0E1; --sec1: #0BC3D0; --sec2: #2AC064; --sec3: #D96A3A; --sec4: #F48B2F;
+      --bg: #0A0A0A;
+      --tone-deep: #000000; --tone-mid: #242424; --tone-bright: #ADC0EB;
+      --sidebar-bg: var(--tone-deep);
+      --topnav-tab-active-bg: #333333;
+      --topnav-tab-active-text: #ADC0EB;
+      --sidebar-panel-bg: #000000;
+      --sidebar-surface: #242424;
+      --sidebar-hover: #292929;
+      --sidebar-active: #3D3D3D;
+      --sidebar-text: #ADC0EB;
+      --sidebar-text-active: #ADC0EB;
+      --ink: #E9EDF7;
+      --muted: #A7AFC2;
+      --line: #ADC0EB;
+      --accent-soft: color-mix(in srgb, var(--accent) 22%, transparent);
+      --sec1-soft: color-mix(in srgb, var(--sec1) 22%, transparent);
+      --sec2-soft: color-mix(in srgb, var(--sec2) 22%, transparent);
+      --sec3-soft: color-mix(in srgb, var(--sec3) 22%, transparent);
+      --sec4-soft: color-mix(in srgb, var(--sec4) 22%, transparent);
+      --accent-dark: #ADC0EB; --sec1-dark: #BAEEF2; --sec2-dark: #C4F2D6; --sec3-dark: #FCD5C5; --sec4-dark: #F9C190;
+      --muted-soft: color-mix(in srgb, var(--muted) 25%, transparent);
+      --surface-tint: #1F1F1F;
+      /* ombre remplacée par un contour nette (spread sans flou = "bordure" via box-shadow) —
+         une ombre portée classique ne se voit quasiment pas sur un canevas déjà proche du noir. */
+      --shadow-card: 0 0 0 1px var(--line), 0 5px 16px rgba(0,0,0,0.6);
+      --shadow-bar: 0 0 0 1px var(--line);
+    }
+  }
+  :root[data-theme="dark"]{
+    --accent: #84A0E1; --sec1: #0BC3D0; --sec2: #2AC064; --sec3: #D96A3A; --sec4: #F48B2F;
+    --bg: #0A0A0A;
+    --tone-deep: #000000; --tone-mid: #242424; --tone-bright: #ADC0EB;
+    --sidebar-bg: var(--tone-deep);
+    --topnav-tab-active-bg: #333333;
+    --topnav-tab-active-text: #ADC0EB;
+    --sidebar-panel-bg: #000000;
+    --sidebar-surface: #242424;
+    --sidebar-hover: #292929;
+    --sidebar-active: #3D3D3D;
+    --sidebar-text: #ADC0EB;
+    --sidebar-text-active: #ADC0EB;
+    --ink: #E9EDF7;
+    --muted: #A7AFC2;
+    --line: #ADC0EB;
+    --accent-soft: color-mix(in srgb, var(--accent) 22%, transparent);
+    --sec1-soft: color-mix(in srgb, var(--sec1) 22%, transparent);
+    --sec2-soft: color-mix(in srgb, var(--sec2) 22%, transparent);
+    --sec3-soft: color-mix(in srgb, var(--sec3) 22%, transparent);
+    --sec4-soft: color-mix(in srgb, var(--sec4) 22%, transparent);
+    --accent-dark: #ADC0EB; --sec1-dark: #BAEEF2; --sec2-dark: #C4F2D6; --sec3-dark: #FCD5C5; --sec4-dark: #F9C190;
+    --muted-soft: color-mix(in srgb, var(--muted) 25%, transparent);
+    --surface-tint: #1F1F1F;
+    --shadow-card: 0 0 0 1px var(--line), 0 5px 16px rgba(0,0,0,0.6);
+    --shadow-bar: 0 0 0 1px var(--line);
+  }
+  html{scroll-behavior:smooth;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:var(--font-body);
+    background:var(--bg);
+    color:var(--ink);
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    overflow:hidden;
+  }
+
+  /* ---------- TOPNAV (menu horizontal, remplace les anciens onglets logés dans la sidebar) ---------- */
+  #topnav{
+    flex-shrink:0;
+    display:flex;
+    align-items:flex-start;
+    gap:0;
+    padding:11px 0;
+    background:var(--sidebar-bg);
+    box-shadow:var(--shadow-bar);
+    position:relative;
+    z-index:5;
+  }
+  /* largeur calée sur #sidebar (280px) : le bouton Modélisation démarre exactement
+     là où commence le texte de #main-root (padding-left:56px), même alignement
+     vertical que "Workflow ML" dans la zone principale */
+  #topnav .brand{
+    width:280px;
+    box-sizing:border-box;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding-left:20px;
+    padding-top:7px;
+  }
+  #topnav .brand h1{
+    font-family:var(--font-display);
+    font-size:16px;
+    font-weight:600;
+    color:#fff;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  #topnav .brand h1 sup{
+    font-size:0.85em;
+    font-weight:700;
+    color:var(--tone-bright);
+    margin-left:1px;
+  }
+  .top-tabs{
+    display:flex;
+    align-items:flex-start;
+    gap:6px;
+    padding-left:28px;
+  }
+  /* Chaque onglet + sa rangée de résultats de recherche forment une colonne — l'alignement
+     vertical entre onglets et la rangée de résultats se fait tout seul, pas besoin de caler des
+     largeurs à la main entre #topnav .top-tabs et cette rangée. */
+  .top-tab-col{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .top-tab{
+    padding:7px 14px;
+    border-radius:0;
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    letter-spacing:0.04em;
+    color:rgba(255,255,255,0.7);
+    background:transparent;
+    text-decoration:none;
+    border:none;
+    cursor:pointer;
+    transition:background 0.15s ease, color 0.15s ease;
+  }
+  .top-tab:hover{ background:var(--sidebar-hover); color:#fff; }
+  .top-tab.active{ background:var(--topnav-tab-active-bg); color:var(--topnav-tab-active-text); font-weight:600; }
+  /* Rangée de résultats sous un onglet — masquée par défaut, affichée seulement pendant une
+     recherche active (classe .searching sur .top-tabs, cf. JS). Compteur toujours visible sur
+     tous les onglets pendant la recherche (— si 0 résultat sur cette page), flèches seulement si
+     ≥1 résultat. */
+  .top-tab-results{
+    display:none;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    padding:3px 4px 0;
+    font-family:var(--font-mono);
+    font-size:10px;
+    color:rgba(255,255,255,0.45);
+  }
+  .top-tabs.searching .top-tab-results{ display:flex; }
+  .top-tab-results.has-results{ color:rgba(255,255,255,0.85); }
+  .top-tab-results button{
+    background:none;
+    border:none;
+    padding:0 2px;
+    font-size:10px;
+    line-height:1.4;
+    color:inherit;
+    cursor:pointer;
+  }
+  .top-tab-results button:disabled{ visibility:hidden; }
+  .top-tab-results .ttr-count{ min-width:12px; text-align:center; }
+
+  /* ---------- BODY-ROW (sidebar + main, sous le topnav) ---------- */
+  #body-row{
+    flex:1;
+    min-height:0;
+    display:flex;
+    overflow:hidden;
+  }
+
+  /* ---------- SIDEBAR (partagée) ---------- */
+  #sidebar{
+    width:280px;
+    flex-shrink:0;
+    background:var(--sidebar-panel-bg);
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  #sidebar-scroll{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    padding:10px 0 10px;
+    scrollbar-width:none; /* Firefox — barre de défilement désactivée par défaut */
+  }
+  #sidebar-scroll::-webkit-scrollbar{display:none;} /* Chrome/Safari — idem */
+  #sidebar-scroll.scrollbar-visible{scrollbar-width:thin;}
+  #sidebar-scroll.scrollbar-visible::-webkit-scrollbar{display:block; width:8px;}
+  #sidebar-scroll.scrollbar-visible::-webkit-scrollbar-track{background:transparent;}
+  #sidebar-scroll.scrollbar-visible::-webkit-scrollbar-thumb{background:var(--sidebar-hover); border-radius:4px;}
+  .zoom-controls{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .zoom-controls button{
+    width:24px;
+    height:24px;
+    border-radius:6px;
+    border:1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    background:var(--sidebar-surface);
+    color:var(--sidebar-text);
+    font-family:var(--font-mono);
+    font-size:14px;
+    line-height:1;
+    cursor:pointer;
+  }
+  .zoom-controls button:hover{background:var(--sidebar-active); color:var(--sidebar-text-active); border-color:var(--sidebar-active);}
+  #scrollbar-toggle{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-left:auto;
+  }
+  #scrollbar-toggle svg{width:18px; height:18px; display:block; overflow:visible;}
+  .zoom-controls #zoom-level{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--sidebar-text);
+    min-width:34px;
+    text-align:center;
+  }
+  /* Recherche déplacée dans le topnav (2026-08-21) : un champ unique à droite du menu
+     horizontal, résultats affichés par section — un compteur + des flèches sous chaque onglet
+     plutôt qu'un unique prev/next global, cf. style-tech.md/structure-tech.md. */
+  .topnav-search{
+    margin-left:auto;
+    padding-right:20px;
+    display:flex;
+    align-items:center;
+    align-self:center;
+  }
+  .topnav-search input{
+    width:180px;
+    box-sizing:border-box;
+    background:var(--sidebar-hover);
+    border:1px solid rgba(255,255,255,0.14);
+    color:#fff;
+    border-radius:6px;
+    padding:6px 9px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    outline:none;
+  }
+  .topnav-search input::placeholder{color:rgba(255,255,255,0.5);}
+  .topnav-search input:focus{border-color:var(--tone-bright);}
+  mark.search-mark{background:color-mix(in srgb, var(--sec4) 55%, white); color:#172033; border-radius:2px; padding:0 1px;}
+
+  /* ---------- Bascule clair/sombre ---------- */
+  #theme-toggle{
+    flex:none; width:26px; height:26px; margin:0 14px 0 10px; padding:0; border:none; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    background:transparent; color:rgba(255,255,255,0.7);
+    transition:background .15s ease, transform .15s ease;
+  }
+  #theme-toggle:hover{background:rgba(255,255,255,0.15); color:#fff; transform:translateY(-1px);}
+  #theme-toggle .icon-moon{display:none;}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) #theme-toggle .icon-sun{display:none;}
+    :root:not([data-theme="light"]) #theme-toggle .icon-moon{display:block;}
+  }
+  :root[data-theme="dark"] #theme-toggle .icon-sun{display:none;}
+  :root[data-theme="dark"] #theme-toggle .icon-moon{display:block;}
+  mark.search-mark.current{background:var(--sec4); box-shadow:0 0 0 2px color-mix(in srgb, var(--sec4) 50%, transparent);}
+  .sidebar-footer{
+    flex-shrink:0;
+    box-sizing:border-box;
+    padding:8px 20px;
+    background:var(--sidebar-panel-bg);
+    border-top:1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .sidebar-footer .last-updated{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--sidebar-text);
+  }
+
+  /* ---------- Conteneurs par page (nav + main) ---------- */
+  .page-navbody{display:none; padding-top:1px; padding-bottom:8px; transition:background 0.15s ease;}
+  .page-navbody.active{display:block;}
+  .page-main{display:none;}
+  .page-main.active{display:block;}
+
+  .nav-group{margin-top:12px;}
+  .nav-group-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--sidebar-text);
+    padding:7px 20px 6px;
+    border-top:3px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    border-bottom:1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .nav-group-label .label-text{flex:1;}
+  .nav-group-label .chevron{
+    font-size:10px;
+    opacity:0.5;
+    transition:transform 0.15s ease;
+    transform:rotate(0deg);
+  }
+  .nav-group.collapsed .nav-group-label .chevron{transform:rotate(-90deg);}
+  .nav-group-items{overflow:hidden;}
+  .nav-group.collapsed .nav-group-items{display:none;}
+
+  .nav-subgroup{margin-top:2px;}
+  .nav-subgroup-label{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:0.09em;
+    text-transform:lowercase;
+    color:var(--sidebar-text);
+    padding:6px 20px 6px 18px;
+    border-bottom:1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .nav-subgroup-label:hover{opacity:0.8;}
+  .nav-subgroup-label .label-text{flex:1;}
+  .nav-subgroup-label .chevron{
+    font-size:9px;
+    opacity:0.6;
+    transition:transform 0.15s ease;
+    transform:rotate(0deg);
+  }
+  .nav-subgroup.collapsed .nav-subgroup-label .chevron{transform:rotate(-90deg);}
+  .nav-subgroup-items{overflow:hidden;}
+  .nav-subgroup.collapsed .nav-subgroup-items{display:none;}
+  .nav-subgroup-items .nav-item{padding-left:34px;}
+  /* Sous-sous-groupe (optionnel) : EXACTEMENT le même composant que sous-groupe, un cran plus loin —
+     mêmes classes .nav-subgroup/.nav-subgroup-label/.nav-subgroup-items, juste plus indenté (cf.
+     buildPanelPage) plutôt qu'une présentation différente pour un niveau hiérarchique différent. */
+  .nav-subgroup-items .nav-subgroup{margin-top:2px;}
+  .nav-subgroup-items .nav-subgroup-label{padding-left:30px; font-size:10px;}
+  .nav-subgroup-items .nav-subgroup-items .nav-item{padding-left:46px;}
+
+  .nav-item{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    width:100%;
+    padding:6px 20px;
+    background:none;
+    border:none;
+    border-left:3px solid transparent;
+    text-align:left;
+    text-decoration:none;
+    color:var(--sidebar-text);
+    font-family:var(--font-body);
+    font-size:13.5px;
+    cursor:pointer;
+    transition:background 0.12s ease, color 0.12s ease;
+  }
+  .nav-item:hover{background:var(--sidebar-hover); color:var(--sidebar-text-active);}
+  .nav-item.active{
+    background:var(--sidebar-active);
+    color:#fff;
+  }
+
+  /* Lexique — nav par lettre */
+  .nav-letters{
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    gap:4px;
+    padding:12px 20px 4px;
+  }
+  .nav-letter{
+    display:block;
+    text-align:center;
+    padding:6px 0;
+    border-radius:6px;
+    background:none;
+    border:1px solid transparent;
+    color:var(--sidebar-text);
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    text-decoration:none;
+    cursor:pointer;
+  }
+  .nav-letter:hover{background:var(--sidebar-hover); color:var(--sidebar-text-active);}
+  .nav-letter.active{background:var(--sidebar-active); color:#fff; border-color:rgba(255,255,255,0.1);}
+
+  /* Lexique — nuage de tags sur 2 niveaux : groupe (tag plein), puis ses sous-groupes (petits tags), toujours visibles */
+  .nav-tag-cloud{padding:10px 20px 16px;}
+  .nav-tag-group{margin-bottom:10px;}
+  .nav-tag-group:last-child{margin-bottom:0;}
+  .nav-tag{
+    display:inline-block;
+    padding:5px 12px;
+    border-radius:14px;
+    background:var(--sidebar-surface);
+    border:1px solid transparent;
+    font-family:var(--font-body);
+    font-size:12.5px;
+    text-decoration:none;
+    color:var(--sidebar-text);
+    transition:background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  }
+  .nav-tag:hover{border-color:currentColor; background:var(--sidebar-panel-bg);}
+  .nav-tag-sub-row{display:flex; flex-wrap:wrap; gap:4px; margin:5px 0 0 6px;}
+  .nav-tag-sub{
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:9px;
+    background:transparent;
+    border:1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+    font-family:var(--font-body);
+    font-size:10.5px;
+    text-decoration:none;
+    color:var(--sidebar-text);
+    opacity:0.8;
+    transition:opacity 0.12s ease, color 0.12s ease;
+  }
+  .nav-tag-sub:hover{opacity:1; color:var(--ink);}
+
+  /* ---------- MAIN (partagée) ---------- */
+  #main-root{
+    flex:1;
+    min-width:0;
+    height:100%;
+    overflow-y:auto;
+    padding:20px 28px 40px;
+  }
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .panel-header{margin-bottom:14px;}
+  .panel-header h2{
+    font-family:var(--font-display);
+    font-size:26px;
+    font-weight:700;
+    color:var(--accent);
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+
+  /* ---------- SYNTAXES : tableaux ---------- */
+  .syntax-table{
+    width:100%;
+    border-collapse:collapse;
+    background:var(--surface-tint);
+    border-radius:0;
+    box-shadow:var(--shadow-card);
+    overflow:hidden;
+  }
+  .syntax-table thead th{
+    text-align:left;
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.08em;
+    color:var(--muted);
+    font-weight:500;
+    padding:8px 14px;
+    border-bottom:1px solid var(--line);
+    border-right:1px solid var(--line);
+    background:var(--surface-tint);
+  }
+  .syntax-table thead th:last-child{border-right:none;}
+  .syntax-table tbody td{
+    padding:9px 14px;
+    border-bottom:1px solid var(--line);
+    border-right:1px solid var(--line);
+    font-size:13.5px;
+    vertical-align:top;
+    line-height:1.55;
+  }
+  .syntax-table tbody td:last-child{border-right:none;}
+  .syntax-table tbody tr:last-child td{border-bottom:none;}
+  td.col-objectif{color:var(--ink); width:26%;}
+  td.col-syntaxe{
+    background:var(--code-tint);
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    color:var(--ink);
+    width:42%;
+  }
+  td.col-syntaxe code{white-space:pre-wrap; display:block;}
+  td.col-syntaxe code strong, .broken-code strong{
+    background:var(--accent-soft);
+    padding:0 3px;
+    border-radius:3px;
+    font-weight:700;
+  }
+  .broken-code{
+    display:block;
+    color:var(--muted);
+    text-decoration:line-through;
+    text-decoration-color:var(--sec3);
+    margin-bottom:6px;
+    font-size:12.5px;
+  }
+  .mini-label{
+    font-family:var(--font-body);
+    font-size:11px;
+    color:inherit;
+    opacity:0.7;
+    margin:8px 0 3px;
+  }
+  .mini-table{
+    background:var(--surface-tint);
+    border-radius:0;
+    box-shadow:var(--shadow-card);
+    padding:8px 10px;
+    margin-bottom:8px;
+    white-space:pre-wrap;
+    font-size:12px;
+    color:var(--ink);
+  }
+  td.col-resultat{
+    background:var(--result-tint);
+    color:var(--sec4-dark);
+    width:32%;
+    white-space:pre-wrap;
+    font-family:var(--font-mono);
+    font-size:12px;
+  }
+  td.col-nom{color:var(--ink); width:20%;}
+  td.col-formule{
+    background:var(--code-tint);
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    color:var(--ink);
+    width:32%;
+    white-space:pre-wrap;
+  }
+  td.col-formule code{white-space:pre-wrap; display:block;}
+  td.col-formule strong{
+    background:var(--accent-soft);
+    padding:0 3px;
+    border-radius:3px;
+    font-weight:700;
+  }
+  td.col-params{
+    background:var(--sec2-soft);
+    color:var(--sec2-dark);
+    width:24%;
+    font-family:var(--font-mono);
+    font-size:12px;
+  }
+  .param-line{
+    line-height:1.5;
+    margin-bottom:8px;
+  }
+  .param-line:last-child{margin-bottom:0;}
+  td.col-explication{
+    background:var(--result-tint);
+    color:var(--sec4-dark);
+    width:24%;
+    white-space:pre-wrap;
+    font-family:var(--font-mono);
+    font-size:12px;
+  }
+  .syntax-table td .katex-display{
+    margin:6px 0;
+    overflow-x:auto;
+    overflow-y:hidden;
+  }
+  td.col-formule .katex-display{
+    background:var(--surface-tint);
+    border:1px solid color-mix(in srgb, var(--accent) 12%, transparent);
+    border-radius:6px;
+    padding:8px 10px;
+    margin:0 0 8px;
+  }
+  td.col-formule .katex{
+    background:var(--surface-tint);
+    border:1px solid color-mix(in srgb, var(--accent) 12%, transparent);
+    border-radius:5px;
+    padding:2px 6px;
+    display:inline-block;
+    margin-bottom:6px;
+  }
+  td.col-formule .katex-display .katex{
+    background:none;
+    border:none;
+    padding:0;
+    margin:0;
+    display:inline;
+  }
+  td.col-params .katex{
+    background:var(--surface-tint);
+    border:1px solid color-mix(in srgb, var(--sec2) 20%, transparent);
+    border-radius:4px;
+    padding:0px 5px;
+    display:inline-block;
+  }
+  .compat-note{
+    margin-top:8px;
+    padding-top:8px;
+    border-top:1px dashed color-mix(in srgb, var(--accent) 25%, transparent);
+    font-family:var(--font-body);
+    font-size:11.5px;
+    line-height:1.5;
+    color:var(--sec4-dark);
+  }
+  .compat-note b{font-weight:500; color:var(--sec4-dark);}
+
+  /* ---------- CARTES "CONCEPTS" (classes .concept-*/.panel) : partagées par les 3 pages
+     Modélisation/Maths/Industrialisation — même gabarit de carte, contenu différent ---------- */
+  .concept-body{width:100%;}
+  .concept-intro{
+    font-size:15px;
+    line-height:1.7;
+    color:var(--muted);
+    margin:0 0 14px;
+  }
+  .concept-block{margin:0 0 12px;}
+  .block-text{
+    font-size:14.5px;
+    line-height:1.75;
+    color:var(--ink);
+    margin:0 0 12px;
+  }
+  .block-text strong, .step-text strong, .compare-text strong, .block-note strong, .concept-mini-table strong{
+    color:var(--ink);
+    background:var(--accent-soft);
+    padding:0 3px;
+    border-radius:3px;
+    font-weight:600;
+  }
+  .tag-p, .tag-np{
+    display:inline-block;
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    font-weight:700;
+    padding:0 6px;
+    border-radius:9px;
+    line-height:1.6;
+    margin-left:2px;
+  }
+  .tag-p{color:var(--sec1); background:var(--sec1-soft);}
+  .tag-np{color:var(--sec2); background:var(--sec2-soft);}
+  .model-tag{display:inline-block; padding:1px 7px; line-height:1.25; font-size:0.92em; border-radius:6px; font-weight:600; position:relative;}
+  .model-tag-p{background:var(--sec1); color:#fff;}
+  .model-tag-np{background:var(--sec2); color:#fff;}
+  .model-tag .tag-suffix{font-family:var(--font-mono); font-weight:700; font-size:10px; opacity:0.85;}
+  .model-tag[data-tooltip]{cursor:help; border-bottom:1px dashed currentColor;}
+  a.model-tag{text-decoration:none;}
+  a.model-tag.model-tag-link{cursor:pointer; border-bottom:1.5px solid currentColor;}
+  a.model-tag.model-tag-link:hover{filter:brightness(0.92);}
+  .model-tag[data-tooltip]::after{
+    content:attr(data-tooltip);
+    position:absolute;
+    left:50%;
+    bottom:calc(100% + 6px);
+    transform:translateX(-50%);
+    background:var(--ink);
+    color:#fff;
+    font-weight:500;
+    font-size:11.5px;
+    white-space:nowrap;
+    padding:4px 8px;
+    border-radius:5px;
+    opacity:0;
+    visibility:hidden;
+    transition:opacity 0.12s ease;
+    z-index:20;
+    pointer-events:none;
+  }
+  .model-tag[data-tooltip]:hover::after{opacity:1; visibility:visible;}
+  .block-diagram{
+    background:var(--surface-tint);
+    border-radius:0;
+    box-shadow:var(--shadow-card);
+    padding:12px 10px;
+    margin:0 0 12px;
+    overflow-x:auto;
+  }
+  .block-diagram svg{display:block; margin:0 auto; min-width:640px;}
+  .flow-box{fill:var(--surface-tint); stroke:var(--muted-soft); stroke-width:1.4;}
+  .flow-box.q{fill:var(--sec1-soft); stroke:var(--sec1);}
+  .flow-box.leaf{fill:var(--accent-soft); stroke:var(--accent);}
+  .flow-label{font-family:var(--font-body); font-size:12.5px; font-weight:600; fill:var(--ink);}
+  .flow-label.q-label{fill:var(--sec1-dark); font-weight:600;}
+  .flow-label.leaf-label{fill:var(--accent-dark); font-weight:700; font-size:14.5px;}
+  .flow-tool-pill{fill:var(--surface-tint); stroke:var(--muted-soft); stroke-width:1;}
+  .flow-tool-text{font-family:var(--font-mono); font-size:9.5px; font-weight:600; fill:var(--muted); text-anchor:middle;}
+  .flow-line{stroke:var(--muted-soft); stroke-width:1.4; fill:none;}
+  .flow-arrow{fill:var(--muted-soft);}
+  .edge-chip{fill:var(--code-tint); stroke:none;}
+  .edge-text{font-family:var(--font-mono); font-size:10.5px; fill:var(--muted); text-anchor:middle;}
+  .leaf-link{cursor:pointer;}
+  .leaf-link:hover .flow-box.leaf{stroke-width:2.2;}
+  .leaf-link:hover .flow-label.leaf-label{text-decoration:underline;}
+  .phase-flow{
+    display:flex;
+    align-items:stretch;
+    gap:2px;
+    margin:0 0 4px;
+  }
+  .phase-card{
+    flex:1;
+    min-width:0;
+    border-radius:0;
+    padding:10px 12px;
+    background:var(--sec1-soft);
+    border-left:3px solid var(--sec1);
+    box-shadow:var(--shadow-card);
+  }
+  .phase-card-title{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:12.5px;
+    color:var(--sec1-dark);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    margin:0 0 6px;
+  }
+  .phase-steps{margin:0; padding:0; list-style:none;}
+  .phase-steps li{
+    font-size:11px;
+    line-height:1.5;
+    color:var(--muted);
+    padding:1px 0;
+  }
+  .phase-steps li .step-no{font-family:var(--font-mono); color:var(--muted); margin-right:3px;}
+  .phase-steps a{color:inherit; text-decoration:none;}
+  .phase-steps a.step-link-blue{color:var(--accent-dark);}
+  .phase-steps a:hover{text-decoration:underline;}
+  .pipeline-tag{
+    display:inline-block;
+    font-family:var(--font-mono);
+    font-size:9px;
+    font-weight:700;
+    color:var(--accent-dark);
+    background:var(--accent-soft);
+    padding:1px 5px;
+    border-radius:8px;
+    margin-right:4px;
+    vertical-align:middle;
+  }
+  .phase-arrow{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+    width:20px;
+    color:var(--muted);
+    font-size:15px;
+  }
+  @media (max-width:820px){
+    .phase-flow{flex-direction:column;}
+    .phase-arrow{width:100%; height:16px; transform:rotate(90deg);}
+  }
+  .block-text.with-divider, .category-block.with-divider{border-top:1px solid var(--line); padding-top:18px; margin-top:6px;}
+  .category-block{margin:0 0 14px;}
+  .category-badge{
+    display:inline-block;
+    background:var(--accent-soft);
+    border:1.5px solid var(--accent);
+    color:var(--accent-dark);
+    border-radius:10px;
+    padding:6px 16px;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:14px;
+    margin-bottom:10px;
+  }
+  .category-desc{margin:0; font-size:13.5px; line-height:1.55; color:var(--muted);}
+  .compare-card.role-p{background:var(--accent-soft); border-left:3px solid var(--accent);}
+  .compare-card.role-p .compare-label{color:var(--accent);}
+  .compare-card.role-np{background:var(--sec2-soft); border-left:3px solid var(--sec2);}
+  .compare-card.role-np .compare-label{color:var(--sec2);}
+  .block-formula{
+    background:var(--surface-tint);
+    border-radius:0;
+    box-shadow:var(--shadow-card);
+    padding:12px 16px;
+    margin:0 0 12px;
+    text-align:center;
+    overflow-x:auto;
+  }
+  .block-formula .katex{font-size:1.1em;}
+  /* Numérotation reprise du style de référence (reference.html ▸ #dash .steplist) : pastille
+     ronde "douce" (fond clair + chiffre coloré) plutôt qu'un disque plein, lignes zébrées, pas
+     de rail vertical entre les puces. */
+  .concept-steps{
+    list-style:none;
+    margin:0 0 14px;
+    padding:6px 8px;
+    counter-reset:step-counter;
+    background:var(--surface-tint);
+    border:1px solid var(--line);
+    box-shadow:var(--shadow-card);
+  }
+  .concept-steps li{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:7px 6px;
+    margin:0;
+  }
+  .concept-steps li:nth-child(even){background:var(--bg);}
+  .concept-steps li::before{
+    counter-increment:step-counter;
+    content:counter(step-counter);
+    flex:none;
+    width:22px;height:22px;
+    border-radius:50%;
+    background:var(--accent);
+    color:#fff;
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:11px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .step-text{font-size:14px; line-height:1.65; padding-top:2px;}
+  .block-compare{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));
+    gap:12px;
+    margin:0 0 12px;
+  }
+  .compare-card{
+    background:var(--surface-tint);
+    border-radius:0;
+    box-shadow:var(--shadow-card);
+    padding:9px 12px;
+  }
+  .compare-label{
+    font-family:var(--font-display);
+    font-size:13px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    margin-bottom:4px;
+    color:var(--ink);
+  }
+  .compare-text{font-size:13px; line-height:1.55; color:var(--muted);}
+  .block-code{
+    background:var(--code-tint);
+    border-radius:0;
+    box-shadow:var(--shadow-card);
+    padding:9px 14px;
+    margin:0 0 12px;
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    color:var(--ink);
+    white-space:pre-wrap;
+    overflow-x:auto;
+  }
+  .block-code strong{background:var(--accent-soft); padding:0 3px; border-radius:3px; font-weight:700;}
+  .block-note{
+    border-left:4px solid var(--sec2);
+    background:var(--sec2-soft);
+    border-radius:0;
+    box-shadow:var(--shadow-card);
+    padding:9px 14px;
+    margin:0 0 12px;
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--sec2-dark);
+  }
+  .block-note.warning{border-left-color:var(--sec3); background:var(--sec3-soft); color:var(--sec3-dark);}
+
+  .compare-card.role-outer{border-left:3px solid var(--sec1);}
+  .compare-card.role-outer .compare-label{color:var(--sec1);}
+  .compare-card.role-inner{border-left:3px solid var(--sec3);}
+  .compare-card.role-inner .compare-label{color:var(--sec3);}
+
+  .concept-mini-table{
+    width:100%;
+    border-collapse:collapse;
+    margin:0 0 12px;
+    font-size:13px;
+    background:var(--surface-tint);
+    border-radius:0;
+    box-shadow:var(--shadow-card);
+    overflow:hidden;
+  }
+  .concept-mini-table th, .concept-mini-table td{
+    border:none;
+    border-bottom:1px solid var(--line);
+    border-right:1px solid var(--line);
+    padding:8px 10px;
+    text-align:center;
+  }
+  .concept-mini-table th:last-child, .concept-mini-table td:last-child{border-right:none;}
+  .concept-mini-table tbody tr:last-child td{border-bottom:none;}
+  .concept-mini-table th{
+    background:var(--surface-tint);
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+  .block-table-wrap{overflow-x:auto;}
+
+  .concept-derivation{
+    border-radius:0;
+    box-shadow:var(--shadow-card);
+    overflow:hidden;
+    margin:0 0 12px;
+    background:var(--surface-tint);
+  }
+  .derivation-step{padding:12px 16px;}
+  .derivation-step + .derivation-step{border-top:1px solid var(--line);}
+  .derivation-step-head{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .derivation-num{
+    font-family:var(--font-mono);
+    font-weight:600;
+    font-size:12px;
+    color:var(--muted);
+    flex-shrink:0;
+  }
+  .derivation-title{
+    font-family:var(--font-display);
+    font-size:15.5px;
+    font-weight:600;
+    color:var(--ink);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+  .derivation-step-body .concept-block:last-child{margin-bottom:0;}
+
+  /* ---------- LEXIQUE ---------- */
+  .page-header{margin-bottom:8px;}
+  .page-eyebrow{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    letter-spacing:0.1em;
+    color:var(--lex);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:8px;
+  }
+  .page-eyebrow .dot{width:7px; height:7px; border-radius:50%; background:var(--lex); display:inline-block;}
+  .page-header h2{
+    font-family:var(--font-display);
+    font-size:26px;
+    font-weight:700;
+    color:var(--accent);
+    margin:0 0 8px;
+    letter-spacing:-0.01em;
+  }
+  .page-intro{
+    font-size:14px;
+    line-height:1.65;
+    color:var(--muted);
+    margin:0 0 32px;
+    max-width:640px;
+  }
+  .lex-letter{margin-bottom:32px;}
+  .lex-letter-heading{
+    font-family:var(--font-display);
+    font-size:21px;
+    font-weight:600;
+    color:var(--lex);
+    border-bottom:2px solid var(--lex);
+    padding-bottom:6px;
+    margin:0 0 4px;
+    scroll-margin-top:20px;
+  }
+  .lex-entry{padding:14px 0; border-bottom:1px solid var(--line);}
+  .lex-entry:last-child{border-bottom:none;}
+  .lex-term{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:15px;
+    color:var(--ink);
+    margin-bottom:4px;
+  }
+  .lex-def{font-size:13.5px; line-height:1.6; color:var(--muted); margin:0;}
+  .lex-def a{color:var(--lex); text-decoration:none; border-bottom:1px solid color-mix(in srgb, var(--lex) 35%, transparent);}
+  .lex-def a:hover{border-bottom-color:var(--lex);}
+  .lex-def code{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    background:var(--code-tint);
+    padding:0 4px;
+    border-radius:3px;
+    color:var(--ink);
+  }
+  .lex-section-divider{border:none; border-top:1px solid var(--line); margin:40px 0 32px;}
+
+  /* Vue groupée : cadres de groupe en colonnes (masonry CSS, largeur au contenu plutôt que pleine largeur),
+     chacun contenant un cadre par sous-groupe, puis des puces cliquables (nom seul, sans définition) qui
+     renvoient vers la liste alphabétique ci-dessus. Titres en "légende" posée sur la bordure (comme un
+     fieldset) pour éviter la ligne de titre vide sur toute la largeur du cadre. */
+  #lex-grouped{
+    column-width:360px;
+    column-gap:20px;
+  }
+  .lex-group-card{
+    position:relative;
+    display:inline-block;
+    width:100%;
+    box-sizing:border-box;
+    break-inside:avoid;
+    -webkit-column-break-inside:avoid;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    padding:20px 18px 16px;
+    margin:0 0 12px;
+    background:var(--surface-tint);
+    scroll-margin-top:20px;
+    vertical-align:top;
+  }
+  .lex-group-card-title{
+    position:absolute;
+    top:-11px;
+    left:14px;
+    background:var(--surface-tint);
+    padding:0 8px;
+    font-family:var(--font-display);
+    font-size:14.5px;
+    font-weight:700;
+    color:var(--accent);
+    margin:0;
+  }
+
+  .lex-subgroup-card{
+    position:relative;
+    break-inside:avoid;
+    -webkit-column-break-inside:avoid;
+    border:1px solid var(--line);
+    border-left:3px solid var(--line);
+    border-radius:0 8px 8px 0;
+    background:var(--surface-tint);
+    padding:14px 14px 12px;
+    margin:10px 0 0;
+    scroll-margin-top:20px;
+  }
+  .lex-subgroup-card:first-of-type{margin-top:4px;}
+  .lex-subgroup-card-title{
+    position:absolute;
+    top:-9px;
+    left:11px;
+    background:var(--surface-tint);
+    padding:0 6px;
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--ink);
+    margin:0;
+  }
+
+  /* Sous-sous-groupe : niveau optionnel à l'intérieur d'un cadre de sous-groupe trop grand (pas de cadre propre, juste un petit titre) */
+  .lex-subsubgroup{margin-top:10px;}
+  .lex-subsubgroup:first-child{margin-top:0;}
+  .lex-subsubgroup-title{
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    color:var(--muted);
+    margin:0 0 6px;
+  }
+
+  .lex-term-chips{display:flex; flex-wrap:wrap; gap:6px 8px;}
+  .lex-term-chip{
+    position:relative;
+    --tt-shift: 0px;
+    display:inline-block;
+    font-size:12px;
+    line-height:1.4;
+    padding:4px 10px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:var(--bg);
+    color:var(--ink);
+    text-decoration:none;
+    transition:background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  }
+  .lex-term-chip[data-tooltip]::after{
+    content:attr(data-tooltip);
+    position:absolute;
+    left:50%;
+    bottom:calc(100% + 7px);
+    transform:translateX(calc(-50% + var(--tt-shift)));
+    width:240px;
+    max-width:60vw;
+    background:var(--ink);
+    color:#fff;
+    font-family:var(--font-body);
+    font-weight:400;
+    font-size:12px;
+    line-height:1.45;
+    white-space:normal;
+    text-align:left;
+    padding:8px 10px;
+    border-radius:8px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.18);
+    opacity:0;
+    visibility:hidden;
+    transition:opacity 0.12s ease;
+    z-index:30;
+    pointer-events:none;
+  }
+  .lex-term-chip[data-tooltip]:hover::after{opacity:1; visibility:visible;}
+  .lex-term-chip:hover{border-color:var(--accent); color:var(--accent); background:var(--surface-tint);}
+  .lex-entry{scroll-margin-top:20px;}
+  .lex-entry:target{animation:lex-flash 1.6s ease;}
+  @keyframes lex-flash{
+    0%{background:color-mix(in srgb, var(--sec4) 45%, white);}
+    100%{background:transparent;}
+  }
+
+  /* ---------- CODE (générateur de workflow) ---------- */
+  #code-form{padding:14px 20px 20px;}
+  .code-form-top{display:flex; justify-content:flex-end; margin-bottom:14px;}
+  .code-reset-btn{
+    background:transparent;
+    border:1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    color:var(--sidebar-text);
+    border-radius:0;
+    padding:5px 10px;
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.03em;
+    cursor:pointer;
+    transition:color 0.12s ease, border-color 0.12s ease;
+  }
+  .code-reset-btn:hover{color:var(--tab-code); border-color:var(--tab-code);}
+  .code-form-group{margin-bottom:18px;}
+  .code-form-group:last-child{margin-bottom:0;}
+  .code-form-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--tab-code);
+    margin-bottom:8px;
+    display:block;
+  }
+  .code-form-row{margin-bottom:8px;}
+  .code-form-row:last-child{margin-bottom:0;}
+  .code-form-row label{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-family:var(--font-body);
+    font-size:12.5px;
+    color:var(--sidebar-text);
+    cursor:pointer;
+    padding:4px 0;
+  }
+  .code-form-row label:hover{color:var(--tab-code);}
+  .code-form-row input[type="checkbox"], .code-form-row input[type="radio"]{
+    accent-color:var(--tab-code);
+    width:14px; height:14px;
+    flex-shrink:0;
+    cursor:pointer;
+  }
+  .code-form select, .code-form input[type="number"], .code-form input[type="text"]{
+    width:100%;
+    box-sizing:border-box;
+    background:var(--sidebar-hover);
+    border:1px solid rgba(255,255,255,0.14);
+    color:var(--sidebar-text-active);
+    border-radius:6px;
+    padding:6px 8px;
+    font-family:var(--font-body);
+    font-size:12.5px;
+    outline:none;
+  }
+  .code-form select:focus, .code-form input:focus{border-color:var(--tab-code);}
+  .code-form-hint{
+    font-family:var(--font-body);
+    font-size:11px;
+    line-height:1.5;
+    color:var(--sidebar-text);
+    margin:6px 0 0;
+    opacity:0.8;
+  }
+  .code-kind-toggle{display:flex; gap:6px;}
+  .code-kind-toggle button{
+    flex:1;
+    padding:9px 6px;
+    border-radius:0;
+    border:1px solid rgba(255,255,255,0.14);
+    background:var(--sidebar-hover);
+    color:rgba(255,255,255,0.65);
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    transition:background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  }
+  .code-kind-toggle button:hover{color:var(--sidebar-text-active);}
+  .code-kind-toggle button.active{background:var(--tab-code); border-color:var(--tab-code); color:#fff;}
+  .code-form-divider{height:1px; background:color-mix(in srgb, var(--accent) 15%, transparent); margin:18px 0;}
+
+  #mainpage-code{max-width:none;}
+  .code-section-header{margin-top:28px;}
+  .code-req-header{margin:0 0 8px;}
+  .code-req-header h3{font-family:var(--font-mono); font-size:12px; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase; margin:0;}
+  .code-output-wrap{position:relative;}
+  .code-output-wrap + .code-output-wrap{margin-top:14px;}
+  .code-output.code-output-requirements{max-height:140px; overflow-y:auto;}
+  .code-output{
+    background:var(--surface-tint);
+    color:var(--ink);
+    box-shadow:var(--shadow-card);
+    max-height:none;
+    white-space:pre;
+    overflow-x:auto;
+    font-size:12.5px;
+    line-height:1.6;
+    padding:20px 22px;
+  }
+  .code-output .kw{color:var(--sec1-dark); font-weight:600;}
+  .code-output .cm{color:var(--muted);}
+  .code-output .st{color:var(--sec4-dark);}
+  .code-copy-btn{
+    position:absolute;
+    top:12px; right:14px;
+    z-index:2;
+    background:var(--tab-code);
+    color:#fff;
+    border:none;
+    border-radius:0;
+    padding:6px 14px;
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    font-weight:600;
+    cursor:pointer;
+    box-shadow:var(--shadow-card);
+    transition:filter 0.15s ease;
+  }
+  .code-copy-btn:hover{filter:brightness(1.08);}
+  .code-copy-btn.copied{background:var(--sec2);}
+
+  @media (max-width:820px){
+    #code-form{padding:10px 16px 16px;}
+  }
+
+  /* ---------- REFERENCES ---------- */
+  .ref-subheading{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--font-display);
+    font-size:15px;
+    font-weight:600;
+    color:var(--ink);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    margin:14px 0 10px;
+  }
+  .ref-subheading:first-child{margin-top:0;}
+  .ref-subheading .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block;}
+  .datasrc-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(230px, 1fr));
+    gap:10px;
+    margin:0 0 14px;
+  }
+  .datasrc-card{
+    display:block;
+    background:var(--surface-tint);
+    border-radius:0;
+    box-shadow:var(--shadow-card);
+    border-left:3px solid var(--data);
+    padding:10px 12px;
+    text-decoration:none;
+    color:inherit;
+    transition:box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .datasrc-card:hover{transform:translateY(-1px); box-shadow:0 8px 20px color-mix(in srgb, var(--ink) 22%, transparent);}
+  .datasrc-card-name{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:13.5px;
+    color:var(--data);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    margin-bottom:4px;
+  }
+  .datasrc-card-desc{font-size:12.5px; line-height:1.5; color:var(--muted); margin:0;}
+  .linklist{
+    margin:0;
+    font-size:13.5px;
+    line-height:2;
+  }
+  .linklist p{margin:0;}
+  .linklist a{
+    color:var(--ink);
+    text-decoration:none;
+    border-bottom:1px solid var(--line);
+  }
+  .linklist a:hover{border-bottom-color:currentColor;}
+
+  /* mobile */
+  @media (max-width:820px){
+    html,body{height:auto;}
+    body{height:auto; overflow:visible;}
+    #topnav{flex-wrap:wrap; gap:10px; padding:10px 16px;}
+    #topnav .brand{width:auto; padding-left:0;}
+    .top-tabs{padding-left:0;}
+    #body-row{flex-direction:column; height:auto; overflow:visible;}
+    #sidebar{
+      width:100%;
+      height:auto;
+      overflow:visible;
+    }
+    #sidebar-scroll{
+      overflow-y:visible;
+      padding:16px 0;
+    }
+    .sidebar-footer{margin-top:14px;}
+    .page-navbody{padding-bottom:0;}
+    .nav-group{margin-top:14px;}
+    #main-root{height:auto; overflow-y:visible; padding:14px 14px 40px;}
+    .block-compare{grid-template-columns:1fr;}
+    .derivation-step{padding:10px 12px;}
+    .syntax-table, .syntax-table thead, .syntax-table tbody, .syntax-table th, .syntax-table td, .syntax-table tr{display:block;}
+    .syntax-table thead{display:none;}
+    .syntax-table tbody tr{
+      border-bottom:1px solid var(--line);
+      padding:12px 0;
+    }
+    .syntax-table tbody tr:last-child{border-bottom:none;}
+    .syntax-table td{border-bottom:none !important; padding:6px 16px !important; width:auto !important;}
+    .syntax-table td.col-objectif{font-weight:500;}
+    .syntax-table td.col-nom{font-weight:500;}
+    .syntax-table td::before{
+      content:attr(data-label);
+      display:block;
+      font-family:var(--font-mono);
+      font-size:10px;
+      letter-spacing:0.08em;
+      color:var(--muted);
+      margin-bottom:3px;
+    }
+  }
+</style>
+</head>
+<body data-page="modelisation">
+
+<header id="topnav">
+  <div class="brand">
+    <h1>Memoℝ<sup>IA</sup></h1>
+  </div>
+  <div class="top-tabs">
+    <div class="top-tab-col">
+      <button type="button" class="top-tab active" data-page="modelisation">Modélisation</button>
+      <div class="top-tab-results" data-page="modelisation">
+        <button type="button" class="ttr-prev" aria-label="Résultat précédent" disabled>↑</button>
+        <span class="ttr-count"></span>
+        <button type="button" class="ttr-next" aria-label="Résultat suivant" disabled>↓</button>
+      </div>
+    </div>
+    <div class="top-tab-col">
+      <button type="button" class="top-tab" data-page="maths">Maths</button>
+      <div class="top-tab-results" data-page="maths">
+        <button type="button" class="ttr-prev" aria-label="Résultat précédent" disabled>↑</button>
+        <span class="ttr-count"></span>
+        <button type="button" class="ttr-next" aria-label="Résultat suivant" disabled>↓</button>
+      </div>
+    </div>
+    <div class="top-tab-col">
+      <button type="button" class="top-tab" data-page="industrialisation">Industrialisation</button>
+      <div class="top-tab-results" data-page="industrialisation">
+        <button type="button" class="ttr-prev" aria-label="Résultat précédent" disabled>↑</button>
+        <span class="ttr-count"></span>
+        <button type="button" class="ttr-next" aria-label="Résultat suivant" disabled>↓</button>
+      </div>
+    </div>
+    <div class="top-tab-col">
+      <button type="button" class="top-tab" data-page="code">Code</button>
+      <div class="top-tab-results" data-page="code">
+        <button type="button" class="ttr-prev" aria-label="Résultat précédent" disabled>↑</button>
+        <span class="ttr-count"></span>
+        <button type="button" class="ttr-next" aria-label="Résultat suivant" disabled>↓</button>
+      </div>
+    </div>
+    <div class="top-tab-col">
+      <button type="button" class="top-tab" data-page="syntaxes">Syntaxes</button>
+      <div class="top-tab-results" data-page="syntaxes">
+        <button type="button" class="ttr-prev" aria-label="Résultat précédent" disabled>↑</button>
+        <span class="ttr-count"></span>
+        <button type="button" class="ttr-next" aria-label="Résultat suivant" disabled>↓</button>
+      </div>
+    </div>
+    <div class="top-tab-col">
+      <button type="button" class="top-tab" data-page="lexique">Lexique</button>
+      <div class="top-tab-results" data-page="lexique">
+        <button type="button" class="ttr-prev" aria-label="Résultat précédent" disabled>↑</button>
+        <span class="ttr-count"></span>
+        <button type="button" class="ttr-next" aria-label="Résultat suivant" disabled>↓</button>
+      </div>
+    </div>
+    <div class="top-tab-col">
+      <button type="button" class="top-tab" data-page="references">Refs</button>
+      <div class="top-tab-results" data-page="references">
+        <button type="button" class="ttr-prev" aria-label="Résultat précédent" disabled>↑</button>
+        <span class="ttr-count"></span>
+        <button type="button" class="ttr-next" aria-label="Résultat suivant" disabled>↓</button>
+      </div>
+    </div>
+  </div>
+  <div class="topnav-search">
+    <input type="text" id="search-input" placeholder="Rechercher… ( / )" autocomplete="off">
+  </div>
+  <button type="button" id="theme-toggle" aria-label="Passer en mode sombre" aria-pressed="false">
+    <svg class="icon-sun" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 3v2M12 19v2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M3 12h2M19 12h2M5.64 18.36l1.42-1.42M16.94 7.06l1.42-1.42"/></svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M20.6 15.3A9 9 0 0 1 8.7 3.4 9 9 0 1 0 20.6 15.3Z"/></svg>
+  </button>
+</header>
+
+<div id="body-row">
+<nav id="sidebar">
+  <div id="sidebar-scroll">
+    <div id="navbody-modelisation" class="page-navbody active"></div>
+    <div id="navbody-maths" class="page-navbody"></div>
+    <div id="navbody-industrialisation" class="page-navbody"></div>
+    <div id="navbody-code" class="page-navbody">
+      <div id="code-form"></div>
+    </div>
+    <div id="navbody-syntaxes" class="page-navbody"></div>
+    <div id="navbody-lexique" class="page-navbody">
+      <div class="nav-group">
+        <div class="nav-group-label lexique"><span class="label-text">Groupe</span></div>
+        <div class="nav-tag-cloud" id="nav-lex-groups"></div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label lexique"><span class="label-text">Alphabétique</span></div>
+        <div class="nav-letters" id="nav-letters"></div>
+      </div>
+    </div>
+    <div id="navbody-references" class="page-navbody"></div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="zoom-controls">
+      <button id="zoom-out" type="button" aria-label="Réduire le zoom">−</button>
+      <span id="zoom-level">100%</span>
+      <button id="zoom-in" type="button" aria-label="Augmenter le zoom">+</button>
+      <button id="scrollbar-toggle" type="button" aria-label="Afficher/masquer la barre de défilement du menu"></button>
+    </div>
+    <div class="last-updated">Dernière mise à jour : __LAST_UPDATED__</div>
+  </div>
+</nav>
+
+<main id="main-root">
+  <div id="mainpage-modelisation" class="page-main active"></div>
+  <div id="mainpage-maths" class="page-main"></div>
+  <div id="mainpage-industrialisation" class="page-main"></div>
+  <div id="mainpage-code" class="page-main">
+    <div class="page-header">
+      <h2>SkeletonIA</h2>
+    </div>
+
+    <div class="page-header code-section-header">
+      <h2>Modélisation</h2>
+    </div>
+    <p class="page-intro">Configure ton projet dans le panneau de gauche — le code Python correspondant se génère ici, prêt à copier dans un notebook. Squelette générique à adapter (noms de colonnes, chemins de fichiers...).</p>
+    <div class="page-header code-req-header">
+      <h3>requirements.txt</h3>
+    </div>
+    <div class="code-output-wrap">
+      <button type="button" id="code-copy-btn-requirements" class="code-copy-btn">Copier</button>
+      <pre class="block-code code-output code-output-requirements"><code id="code-output-requirements"></code></pre>
+    </div>
+    <div class="code-output-wrap">
+      <button type="button" id="code-copy-btn" class="code-copy-btn">Copier</button>
+      <pre class="block-code code-output"><code id="code-output"></code></pre>
+    </div>
+
+    <div class="page-header code-section-header">
+      <h2>Utilisation finale</h2>
+    </div>
+    <p class="page-intro">Bloc séparé exprès — à exécuter APRÈS coup, dans un script/notebook différent (charge le modèle sauvegardé plutôt que de ré-entraîner).</p>
+    <div class="page-header code-req-header">
+      <h3>requirements.txt</h3>
+    </div>
+    <div class="code-output-wrap">
+      <button type="button" id="code-copy-btn-usage-requirements" class="code-copy-btn">Copier</button>
+      <pre class="block-code code-output code-output-requirements"><code id="code-output-usage-requirements"></code></pre>
+    </div>
+    <div class="code-output-wrap">
+      <button type="button" id="code-copy-btn-usage" class="code-copy-btn">Copier</button>
+      <pre class="block-code code-output"><code id="code-output-usage"></code></pre>
+    </div>
+  </div>
+  <div id="mainpage-syntaxes" class="page-main"></div>
+  <div id="mainpage-lexique" class="page-main">
+    <div class="page-header">
+      <h2>Groupe</h2>
+    </div>
+    <div id="lex-grouped"></div>
+    <hr class="lex-section-divider">
+    <div class="page-header">
+      <h2>Alphabétique</h2>
+    </div>
+    <div id="lex-content"></div>
+  </div>
+  <div id="mainpage-references" class="page-main"></div>
+</main>
+</div>
+
+<script src="data/modelisation.js"></script>
+<script src="data/maths.js"></script>
+<script src="data/industrialisation.js"></script>
+<script src="data/syntaxes.js"></script>
+<script src="data/lexique.js"></script>
+<script src="data/references.js"></script>
+
+<script>
+/* ---------- Zoom (partagé) ---------- */
+const ZOOM_KEY = "memo-zoom", ZOOM_MIN = 0.8, ZOOM_MAX = 1.6, ZOOM_STEP = 0.1, ZOOM_BASE = 1.2;
+let currentZoom = parseFloat(localStorage.getItem(ZOOM_KEY)) || 1;
+function applyZoom(z){
+  currentZoom = Math.round(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z)) * 100) / 100;
+  document.documentElement.style.zoom = currentZoom * ZOOM_BASE;
+  localStorage.setItem(ZOOM_KEY, currentZoom);
+  document.getElementById("zoom-level").textContent = Math.round(currentZoom * 100) + "%";
+}
+document.getElementById("zoom-out").addEventListener("click", () => {
+  applyZoom(currentZoom - ZOOM_STEP);
+});
+document.getElementById("zoom-in").addEventListener("click", () => {
+  applyZoom(currentZoom + ZOOM_STEP);
+});
+applyZoom(currentZoom);
+
+/* ---------- Thème clair/sombre ---------- */
+const THEME_KEY = "memo-theme";
+const themeToggleBtn = document.getElementById("theme-toggle");
+function currentIsDark(){
+  const explicit = document.documentElement.getAttribute("data-theme");
+  if (explicit === "dark") return true;
+  if (explicit === "light") return false;
+  return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+function syncThemeToggle(){
+  themeToggleBtn.setAttribute("aria-pressed", String(currentIsDark()));
+  themeToggleBtn.setAttribute("aria-label", currentIsDark() ? "Passer en mode clair" : "Passer en mode sombre");
+}
+themeToggleBtn.addEventListener("click", () => {
+  const next = currentIsDark() ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem(THEME_KEY, next);
+  syncThemeToggle();
+});
+syncThemeToggle();
+
+/* ---------- Barre de défilement du menu latéral (indépendante du zoom) ---------- */
+/* Icônes calquées sur show_hide_bar.png (Xavier) : un document à lignes avec une barre de
+   défilement sur le bord droit (visible seulement à l'état ON) + une pastille œil/œil barré en
+   bas à gauche — pas un simple œil générique, pour que l'icône dise clairement "barre de
+   défilement", pas juste "visible/masqué". */
+const ICON_SCROLLBAR_ON = '<svg viewBox="0 0 24 24">'
+  + '<rect x="7" y="2" width="12" height="15" rx="2" fill="none" stroke="#7C88A6" stroke-width="1.4"/>'
+  + '<line x1="9.5" y1="6" x2="15" y2="6" stroke="#B7C0D6" stroke-width="1.3" stroke-linecap="round"/>'
+  + '<line x1="9.5" y1="9" x2="15" y2="9" stroke="#B7C0D6" stroke-width="1.3" stroke-linecap="round"/>'
+  + '<line x1="9.5" y1="12" x2="13" y2="12" stroke="#B7C0D6" stroke-width="1.3" stroke-linecap="round"/>'
+  + '<rect x="16.2" y="4" width="1.8" height="7" rx="0.9" fill="var(--accent)"/>'
+  + '<g transform="translate(-0.5,12) scale(0.55)" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+  + '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>'
+  + '<circle cx="12" cy="12" r="3" fill="var(--accent)" stroke="none"/>'
+  + '</g></svg>';
+const ICON_SCROLLBAR_OFF = '<svg viewBox="0 0 24 24">'
+  + '<rect x="7" y="2" width="12" height="15" rx="2" fill="none" stroke="#7C88A6" stroke-width="1.4"/>'
+  + '<line x1="9.5" y1="6" x2="15" y2="6" stroke="#B7C0D6" stroke-width="1.3" stroke-linecap="round"/>'
+  + '<line x1="9.5" y1="9" x2="15" y2="9" stroke="#B7C0D6" stroke-width="1.3" stroke-linecap="round"/>'
+  + '<line x1="9.5" y1="12" x2="13" y2="12" stroke="#B7C0D6" stroke-width="1.3" stroke-linecap="round"/>'
+  + '<g transform="translate(-0.5,12) scale(0.55)" fill="none" stroke="#3F4756" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+  + '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>'
+  + '<circle cx="12" cy="12" r="3" fill="#3F4756" stroke="none"/>'
+  + '<line x1="1" y1="4" x2="23" y2="20"/>'
+  + '</g></svg>';
+const SCROLLBAR_KEY = "memo-sidebar-scrollbar";
+const scrollbarToggleBtn = document.getElementById("scrollbar-toggle");
+const sidebarScrollEl = document.getElementById("sidebar-scroll");
+function applyScrollbarPref(visible){
+  sidebarScrollEl.classList.toggle("scrollbar-visible", visible);
+  scrollbarToggleBtn.classList.toggle("active", visible);
+  scrollbarToggleBtn.innerHTML = visible ? ICON_SCROLLBAR_ON : ICON_SCROLLBAR_OFF;
+  scrollbarToggleBtn.setAttribute("aria-pressed", visible ? "true" : "false");
+  localStorage.setItem(SCROLLBAR_KEY, visible ? "1" : "0");
+}
+scrollbarToggleBtn.addEventListener("click", () => {
+  applyScrollbarPref(!sidebarScrollEl.classList.contains("scrollbar-visible"));
+});
+applyScrollbarPref(localStorage.getItem(SCROLLBAR_KEY) === "1");
+
+/* ---------- Helpers communs ---------- */
+function escapeHtml(str){
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/* ---------- Rendu des cartes "concept" (blocks), partagé par Modélisation/Maths/Industrialisation ---------- */
+function richHtml(str){
+  // [[NP:Classe]], [[NP:Classe|Nom convivial]] ou [[NP:Classe|Nom convivial|id-de-page]] —
+  // le nom convivial (s'il est fourni) s'affiche en infobulle au survol ; l'id (s'il est fourni)
+  // transforme le badge en lien cliquable vers la carte correspondante.
+  function modelTag(match, tagClass, tagSuffix){
+    const parts = match.split('|');
+    const name = parts[0];
+    const friendly = parts[1];
+    const target = parts[2];
+    // &#91;/&#93; plutôt que [/] : évite que le remplacement générique [P]/[NP] plus bas ne re-matche ce suffixe déjà généré
+    const inner = name + '<span class="tag-suffix"> &#91;' + tagSuffix + '&#93;</span>';
+    const tooltipAttr = friendly ? ' data-tooltip="' + friendly + '"' : '';
+    if (target){
+      return '<a href="#' + target + '" class="model-tag ' + tagClass + ' model-tag-link"' + tooltipAttr + ' onclick="showSection(\'' + target + '\'); return false;">' + inner + '</a>';
+    }
+    return '<span class="model-tag ' + tagClass + '"' + tooltipAttr + '>' + inner + '</span>';
+  }
+  return escapeHtml(str)
+    .replace(/\[([^\]]+)\]\(#([a-z0-9-]+)\)/g, '<a href="#$2" onclick="showSection(\'$2\'); return false;">$1</a>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1 ↗</a>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\[\[NP:(.+?)\]\]/g, (m, g1) => modelTag(g1, 'model-tag-np', 'NP'))
+    .replace(/\[\[P:(.+?)\]\]/g, (m, g1) => modelTag(g1, 'model-tag-p', 'P'))
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/~~(.+?)~~/g, '<s>$1</s>')
+    .replace(/\[NP\]/g, '<span class="tag-np">[NP]</span>')
+    .replace(/\[P\]/g, '<span class="tag-p">[P]</span>');
+}
+
+function renderBlock(container, block){
+  if (block.type === 'category'){
+    const wrap = document.createElement('div');
+    wrap.className = 'concept-block category-block' + (block.divider ? ' with-divider' : '');
+    if (block.id) wrap.id = block.id;
+    const badge = document.createElement('span');
+    badge.className = 'category-badge';
+    badge.textContent = block.label;
+    wrap.appendChild(badge);
+    const desc = document.createElement('p');
+    desc.className = 'category-desc';
+    desc.innerHTML = richHtml(block.description);
+    wrap.appendChild(desc);
+    container.appendChild(wrap);
+  } else if (block.type === 'text'){
+    const p = document.createElement('p');
+    p.className = 'concept-block block-text' + (block.divider ? ' with-divider' : '');
+    if (block.id) p.id = block.id;
+    p.innerHTML = richHtml(block.html);
+    container.appendChild(p);
+  } else if (block.type === 'formula'){
+    const div = document.createElement('div');
+    div.className = 'concept-block block-formula';
+    div.textContent = '$$' + block.tex + '$$';
+    container.appendChild(div);
+  } else if (block.type === 'steps'){
+    const ol = document.createElement('ol');
+    ol.className = 'concept-block concept-steps';
+    block.items.forEach(item => {
+      const li = document.createElement('li');
+      const txt = document.createElement('div');
+      txt.className = 'step-text';
+      txt.innerHTML = richHtml(item);
+      li.appendChild(txt);
+      ol.appendChild(li);
+    });
+    container.appendChild(ol);
+  } else if (block.type === 'compare'){
+    const div = document.createElement('div');
+    div.className = 'concept-block block-compare';
+    block.items.forEach(it => {
+      const card = document.createElement('div');
+      card.className = 'compare-card' + (it.role ? ' role-' + it.role : '');
+      const label = document.createElement('div');
+      label.className = 'compare-label';
+      label.innerHTML = richHtml(it.label);
+      const text = document.createElement('div');
+      text.className = 'compare-text';
+      text.innerHTML = richHtml(it.text);
+      card.appendChild(label);
+      card.appendChild(text);
+      div.appendChild(card);
+    });
+    container.appendChild(div);
+  } else if (block.type === 'code'){
+    const wrap = document.createElement('div');
+    wrap.className = 'concept-block block-code';
+    const code = document.createElement('code');
+    code.innerHTML = richHtml(block.code);
+    wrap.appendChild(code);
+    container.appendChild(wrap);
+  } else if (block.type === 'note'){
+    const div = document.createElement('div');
+    div.className = 'concept-block block-note ' + (block.style || 'tip');
+    div.innerHTML = richHtml(block.html);
+    container.appendChild(div);
+  } else if (block.type === 'table'){
+    const wrap = document.createElement('div');
+    wrap.className = 'concept-block block-table-wrap';
+    const table = document.createElement('table');
+    table.className = 'concept-mini-table';
+    const thead = document.createElement('thead');
+    thead.innerHTML = '<tr>' + block.headers.map(h => '<th>' + richHtml(h) + '</th>').join('') + '</tr>';
+    const tbody = document.createElement('tbody');
+    block.rows.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = row.map(c => '<td>' + richHtml(c) + '</td>').join('');
+      tbody.appendChild(tr);
+    });
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    container.appendChild(wrap);
+  } else if (block.type === 'diagram'){
+    const wrap = document.createElement('div');
+    wrap.className = 'concept-block block-diagram';
+    wrap.innerHTML = block.svg;
+    container.appendChild(wrap);
+  } else if (block.type === 'derivation'){
+    const wrap = document.createElement('div');
+    wrap.className = 'concept-block concept-derivation';
+    block.steps.forEach((step, idx) => {
+      const stepEl = document.createElement('div');
+      stepEl.className = 'derivation-step';
+      if (step.id) stepEl.id = step.id;
+      const head = document.createElement('div');
+      head.className = 'derivation-step-head';
+      const num = document.createElement('span');
+      num.className = 'derivation-num';
+      num.textContent = step.num !== undefined ? step.num : idx + (block.startIndex || 0);
+      const title = document.createElement('span');
+      title.className = 'derivation-title';
+      title.innerHTML = richHtml(step.title);
+      head.appendChild(num);
+      head.appendChild(title);
+      stepEl.appendChild(head);
+      const body = document.createElement('div');
+      body.className = 'derivation-step-body';
+      (step.blocks || []).forEach(b => renderBlock(body, b));
+      stepEl.appendChild(body);
+      wrap.appendChild(stepEl);
+    });
+    container.appendChild(wrap);
+  }
+}
+
+/* ---------- Rendu Syntaxes (tables) ---------- */
+function setCodeHtml(el, text){
+  el.innerHTML = escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+}
+function renderSyntaxContent(container, content){
+  if (Array.isArray(content)){
+    content.forEach(seg => {
+      if (seg.code !== undefined){
+        const code = document.createElement('code');
+        setCodeHtml(code, seg.code);
+        container.appendChild(code);
+      } else if (seg.table !== undefined){
+        const tableBlock = document.createElement('div');
+        tableBlock.className = 'mini-table';
+        tableBlock.textContent = seg.table;
+        container.appendChild(tableBlock);
+      } else if (seg.label !== undefined){
+        const label = document.createElement('div');
+        label.className = 'mini-label';
+        label.textContent = seg.label;
+        container.appendChild(label);
+      }
+    });
+  } else if (container.classList.contains('col-syntaxe')) {
+    const code = document.createElement('code');
+    setCodeHtml(code, content);
+    container.appendChild(code);
+  } else if (container.classList.contains('col-params')) {
+    content.split('\n').forEach(line => {
+      const div = document.createElement('div');
+      div.className = 'param-line';
+      div.textContent = line;
+      container.appendChild(div);
+    });
+  } else {
+    setCodeHtml(container, content);
+  }
+}
+function renderSyntaxTable(panel, sec){
+  const table = document.createElement('table');
+  table.className = 'syntax-table';
+  const thead = document.createElement('thead');
+  const headers = sec.headers || ["Objectif", "Syntaxe", "Résultat"];
+  const colClasses = sec.colClasses || ["col-objectif", "col-syntaxe", "col-resultat"];
+  thead.innerHTML = '<tr>' + headers.map(h => '<th>' + h + '</th>').join('') + '</tr>';
+  const tbody = document.createElement('tbody');
+  sec.rows.forEach((row) => {
+    const tr = document.createElement('tr');
+    const broken = row.length > headers.length ? row[row.length - 1] : undefined;
+    headers.forEach((label, idx) => {
+      const td = document.createElement('td');
+      td.className = colClasses[idx] || ('col-c' + idx);
+      td.dataset.label = label;
+      if (idx === 1 && broken){
+        const brokenCode = document.createElement('code');
+        brokenCode.className = 'broken-code';
+        setCodeHtml(brokenCode, broken);
+        td.appendChild(brokenCode);
+      }
+      renderSyntaxContent(td, row[idx]);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(thead);
+  table.appendChild(tbody);
+  panel.appendChild(table);
+}
+
+/* ---------- Constructeur générique nav-group/nav-subgroup/nav-subgroup(imbriqué)/panel ---------- */
+// Composant "catégorie repliable" réutilisé à toute profondeur : `sec.subgroup` (optionnel) crée une
+// boîte .nav-subgroup sous le groupe ; `sec.subsubgroup` (optionnel, ne peut exister que si `subgroup`
+// est renseigné — ex: groupe dl, subgroup "Modèles de base" → subsubgroup "CNN"/"RNN") crée une SECONDE
+// boîte .nav-subgroup imbriquée dans la première, avec exactement le même balisage/comportement (juste
+// plus indenté en CSS) — pas de présentation différente selon le niveau. Contrainte identique à
+// group/subgroup : les entrées partageant un même subgroup (ou un même subsubgroup) DOIVENT rester
+// contiguës dans le fichier de données, sinon la boîte se recrée en double.
+function buildPanelPage(sections, groupLabels, navRootEl, mainRootEl, renderPanelBody){
+  let currentGroup = null, currentSubgroup = null, currentSubsubgroup = null;
+  let itemsWrapper = null, subItemsWrapper = null, subsubItemsWrapper = null;
+  function makeCollapsibleBox(parentWrapper, labelClassBase, groupCssClass, label){
+    const wrapper = document.createElement('div');
+    wrapper.className = 'nav-subgroup collapsed';
+    const labelEl = document.createElement('div');
+    labelEl.className = labelClassBase + ' ' + groupCssClass;
+    labelEl.innerHTML = '<span class="label-text">' + label + '</span><span class="chevron">▾</span>';
+    labelEl.addEventListener('click', () => wrapper.classList.toggle('collapsed'));
+    wrapper.appendChild(labelEl);
+    const itemsEl = document.createElement('div');
+    itemsEl.className = 'nav-subgroup-items';
+    wrapper.appendChild(itemsEl);
+    parentWrapper.appendChild(wrapper);
+    return itemsEl;
+  }
+  sections.forEach((sec) => {
+    if (sec.group !== currentGroup){
+      currentGroup = sec.group;
+      currentSubgroup = null;
+      currentSubsubgroup = null;
+      subItemsWrapper = null;
+      subsubItemsWrapper = null;
+      const thisGroupWrapper = document.createElement('div');
+      thisGroupWrapper.className = 'nav-group collapsed';
+      const label = document.createElement('div');
+      label.className = 'nav-group-label ' + sec.group;
+      label.innerHTML = '<span class="label-text">' + groupLabels[sec.group] + '</span><span class="chevron">▾</span>';
+      label.addEventListener('click', () => thisGroupWrapper.classList.toggle('collapsed'));
+      thisGroupWrapper.appendChild(label);
+      const thisItemsWrapper = document.createElement('div');
+      thisItemsWrapper.className = 'nav-group-items';
+      thisGroupWrapper.appendChild(thisItemsWrapper);
+      navRootEl.appendChild(thisGroupWrapper);
+      itemsWrapper = thisItemsWrapper;
+    }
+    if (sec.subgroup && sec.subgroup !== currentSubgroup){
+      currentSubgroup = sec.subgroup;
+      currentSubsubgroup = null;
+      subsubItemsWrapper = null;
+      subItemsWrapper = makeCollapsibleBox(itemsWrapper, 'nav-subgroup-label', sec.group, sec.subgroup);
+    } else if (!sec.subgroup){
+      currentSubgroup = null;
+      currentSubsubgroup = null;
+      subItemsWrapper = null;
+      subsubItemsWrapper = null;
+    }
+    if (sec.subsubgroup && sec.subsubgroup !== currentSubsubgroup){
+      currentSubsubgroup = sec.subsubgroup;
+      subsubItemsWrapper = makeCollapsibleBox(subItemsWrapper, 'nav-subgroup-label', sec.group, sec.subsubgroup);
+    } else if (!sec.subsubgroup){
+      currentSubsubgroup = null;
+      subsubItemsWrapper = null;
+    }
+    const targetWrapper = subsubItemsWrapper || subItemsWrapper || itemsWrapper;
+    const btn = document.createElement('button');
+    btn.className = 'nav-item ' + sec.group;
+    btn.dataset.target = sec.id;
+    const titleSpan = document.createElement('span');
+    titleSpan.textContent = sec.title;
+    btn.appendChild(titleSpan);
+    btn.addEventListener('click', () => showSection(sec.id));
+    targetWrapper.appendChild(btn);
+
+    const panel = document.createElement('section');
+    panel.className = 'panel';
+    panel.id = 'panel-' + sec.id;
+
+    const header = document.createElement('div');
+    header.className = 'panel-header';
+    const h2 = document.createElement('h2');
+    h2.textContent = sec.title;
+    header.appendChild(h2);
+    panel.appendChild(header);
+
+    renderPanelBody(panel, sec);
+    mainRootEl.appendChild(panel);
+  });
+}
+
+/* ---------- groupLabels par page (namespace séparé : "ml" a un libellé différent en Modélisation et en Syntaxes) ---------- */
+const MODELISATION_GROUP_LABELS = {intro:"Introduction", ml:"Machine Learning", dl:"Deep Learning", rl:"Reinforcement Learning"};
+const MATHS_GROUP_LABELS = {"stats-desc":"Statistiques descriptives", proba:"Probabilités &amp; lois", inference:"Inférence statistique", algebre:"Algèbre linéaire", "math-regression":"Régression", signal:"Signal &amp; Fourier"};
+const INDUSTRIALISATION_GROUP_LABELS = {aieng:"AI Engineering", aisec:"Sécurité &amp; Gouvernance des Modèles", mlops:"MLOps", infra:"Infrastructure"};
+const SYNTAXES_GROUP_LABELS = {numpy:"Numpy", pandas:"Pandas", plot:"Matplotlib &amp; Seaborn", stats:"Scipy.stats", regression:"Statsmodels &amp; Régression", ml:"Scikit-learn", dash:"Dash", dl:"Keras &amp; TensorFlow", aieng:"LangChain &amp; LLM APIs", rl:"Gymnasium &amp; Stable Baselines3"};
+const REFERENCES_GROUP_LABELS = {tools:"Documentation & Cheat sheets", misc:"Maths, Régression &amp; Data-viz", modelisation:"Modélisation", industrialisation:"Industrialisation", data:"Sources de données"};
+
+// Gabarit de carte partagé par les 3 pages issues de l'ancien "Concepts" (Modélisation/Maths/
+// Industrialisation) — même rendu, seul le contenu (blocks) diffère.
+function renderConceptPanelBody(panel, sec){
+  const body = document.createElement('div');
+  body.className = 'concept-body';
+  if (sec.intro){
+    const introEl = document.createElement('p');
+    introEl.className = 'concept-intro';
+    introEl.innerHTML = richHtml(sec.intro);
+    body.appendChild(introEl);
+  }
+  sec.blocks.forEach(b => renderBlock(body, b));
+  panel.appendChild(body);
+}
+buildPanelPage(MODELISATION_SECTIONS, MODELISATION_GROUP_LABELS, document.getElementById('navbody-modelisation'), document.getElementById('mainpage-modelisation'), renderConceptPanelBody);
+buildPanelPage(MATHS_SECTIONS, MATHS_GROUP_LABELS, document.getElementById('navbody-maths'), document.getElementById('mainpage-maths'), renderConceptPanelBody);
+buildPanelPage(INDUSTRIALISATION_SECTIONS, INDUSTRIALISATION_GROUP_LABELS, document.getElementById('navbody-industrialisation'), document.getElementById('mainpage-industrialisation'), renderConceptPanelBody);
+
+buildPanelPage(SYNTAXES_SECTIONS, SYNTAXES_GROUP_LABELS, document.getElementById('navbody-syntaxes'), document.getElementById('mainpage-syntaxes'), (panel, sec) => {
+  renderSyntaxTable(panel, sec);
+});
+
+buildPanelPage(REFERENCES_SECTIONS, REFERENCES_GROUP_LABELS, document.getElementById('navbody-references'), document.getElementById('mainpage-references'), (panel, sec) => {
+  const list = document.createElement('div');
+  list.className = 'linklist';
+  list.innerHTML = sec.html;
+  panel.appendChild(list);
+});
+
+/* ---------- Rendu Lexique (liste continue par lettre) ---------- */
+function firstLetter(term){
+  return term.replace(/[^A-Za-zÀ-ÿ].*$/, '').charAt(0).toUpperCase();
+}
+const navLettersEl = document.getElementById('nav-letters');
+const lexContentEl = document.getElementById('lex-content');
+let currentLetter = null;
+let letterSection = null;
+function slugify(s){
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+}
+// Défile jusqu'à un élément À L'INTÉRIEUR de #main-root SANS passer par Element.scrollIntoView() —
+// cette API remonte toute la chaîne d'ancêtres scrollables et finit aussi par décaler la fenêtre
+// elle-même de quelques pixels (la page applique un zoom CSS via JS, cf. <script> tout en haut, qui
+// rend visiblement <body> "juste assez" scrollable pour que scrollIntoView() y touche). Ce décalage
+// est invisible (body a overflow:hidden, donc aucune barre de défilement) et rien ne permet à
+// l'utilisateur de l'annuler : topnav et sidebar restent durablement hors-champ. En ne touchant QUE
+// mainRoot.scrollTop, ce problème ne peut pas se produire.
+function scrollElementIntoMainRoot(el, opts){
+  const mainRoot = document.getElementById('main-root');
+  if (!mainRoot || !el) return;
+  // getBoundingClientRect() renvoie des coordonnées DÉJÀ MULTIPLIÉES par le zoom CSS de la page
+  // (cf. <script> tout en haut), alors que scrollTop reste en pixels NON zoomés — sans cette
+  // division, le delta appliqué est ~zoom× trop grand et l'atterrissage rate largement sa cible
+  // (d'autant plus que la distance à parcourir est grande, ex: un mot loin dans la liste alphabétique).
+  const zoom = parseFloat(document.documentElement.style.zoom) || 1;
+  const elRect = el.getBoundingClientRect();
+  const rootRect = mainRoot.getBoundingClientRect();
+  const delta = ((opts && opts.center)
+    ? (elRect.top + elRect.height / 2) - (rootRect.top + rootRect.height / 2)
+    : elRect.top - rootRect.top) / zoom;
+  mainRoot.scrollTo({top: mainRoot.scrollTop + delta, behavior: (opts && opts.smooth) ? 'smooth' : 'auto'});
+}
+function scrollMainRootToId(id){
+  scrollElementIntoMainRoot(document.getElementById(id));
+}
+// Toutes les ancres internes du Lexique (lettres, tags de groupe/sous-groupe, puces de terme) pointent
+// vers des ids absents de idToPage — sans ceci, chacune retomberait sur le saut d'ancre natif du
+// navigateur (cf. scrollElementIntoMainRoot ci-dessus pour le bug que ça cause).
+function wireLexAnchor(a, targetId){
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    // history.pushState plutôt que location.hash= : assigner .hash déclenche le même algorithme natif
+    // "scroll to fragment" qu'un vrai clic de lien (ça décale la fenêtre, cf. scrollElementIntoMainRoot
+    // ci-dessus) — pushState met à jour l'URL/l'historique sans provoquer ce scroll.
+    if (window.location.hash.slice(1) !== targetId) history.pushState(null, '', '#' + targetId);
+    scrollMainRootToId(targetId);
+    window.scrollTo(0, 0);
+  });
+}
+// Étiquette compacte d'une puce du nuage de tags : un terme "ACRONYME (développement)" ou
+// "Nom complet (ACRONYME)" n'affiche que l'acronyme (le développement reste visible dans la liste alphabétique)
+// Réduit une définition du Lexique (HTML : <code>, <a>, entités...) à du texte brut, pour l'afficher
+// dans l'infobulle CSS (data-tooltip) des puces de la vue "Groupe" — content:attr() n'affiche que du texte.
+function stripHtmlToText(html){
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent.replace(/\s+/g, ' ').trim();
+}
+function chipLabel(t){
+  const m = t.match(/^(.+?)\s*\(([^)]+)\)$/);
+  if (!m) return t;
+  const [, before, inside] = m;
+  const isAcronym = s => s.length >= 2 && s.length <= 8 && /^[A-ZÀ-Ý0-9][A-ZÀ-Ý0-9-]*$/.test(s);
+  if (isAcronym(before)) return before;
+  if (isAcronym(inside)) return inside;
+  return t;
+}
+LEXIQUE_TERMS.forEach((entry) => {
+  const letter = firstLetter(entry.t);
+  if (letter !== currentLetter){
+    currentLetter = letter;
+    const navLink = document.createElement('a');
+    navLink.className = 'nav-letter';
+    const letterTargetId = 'lex-' + letter.toLowerCase();
+    navLink.href = '#' + letterTargetId;
+    navLink.textContent = letter;
+    wireLexAnchor(navLink, letterTargetId);
+    navLettersEl.appendChild(navLink);
+
+    letterSection = document.createElement('section');
+    letterSection.className = 'lex-letter';
+    letterSection.id = 'lex-' + letter.toLowerCase();
+    const heading = document.createElement('h2');
+    heading.className = 'lex-letter-heading';
+    heading.textContent = letter;
+    letterSection.appendChild(heading);
+    lexContentEl.appendChild(letterSection);
+  }
+  const entryEl = document.createElement('div');
+  entryEl.className = 'lex-entry';
+  entryEl.id = 'lexterm-' + slugify(entry.t);
+  const termEl = document.createElement('div');
+  termEl.className = 'lex-term';
+  termEl.textContent = entry.t;
+  const defEl = document.createElement('p');
+  defEl.className = 'lex-def';
+  defEl.innerHTML = entry.d;
+  entryEl.appendChild(termEl);
+  entryEl.appendChild(defEl);
+  letterSection.appendChild(entryEl);
+});
+
+/* ---------- Rendu Lexique (regroupé par page/groupe/sous-groupe/sous-sous-groupe RÉELS du site — noms seuls, liens vers la liste alphabétique ci-dessus) ---------- */
+// Le regroupement du Lexique reprend TEL QUEL le group/subgroup/subsubgroup de la section réelle
+// ciblée par chaque terme — aucun renommage/fusion/éclatement propre au Lexique : les groupes
+// affichés ici DOIVENT correspondre aux sections/sous-sections réelles du site (sidebar
+// Modélisation/Maths/Industrialisation/Syntaxes), pas à un découpage inventé pour équilibrer la
+// taille des cadres. Seule subtilité : certaines clés `group` (ml, dl, aieng, rl) sont réutilisées
+// avec un sens DIFFÉRENT sur la page Syntaxes que sur Modélisation/Industrialisation (ex: `ml` =
+// "Machine Learning" côté Modélisation mais "Scikit-learn" côté Syntaxes, cf.
+// `SYNTAXES_GROUP_LABELS` vs `MODELISATION_GROUP_LABELS`) — la clé de groupe Lexique est donc
+// composée `page-group` pour ne jamais confondre les deux, avec le libellé réel de CHAQUE page
+// (repris directement des `*_GROUP_LABELS` de chaque page, jamais dupliqué à la main ici).
+const idToPage = {};
+MODELISATION_SECTIONS.forEach(s => idToPage[s.id] = 'modelisation');
+MATHS_SECTIONS.forEach(s => idToPage[s.id] = 'maths');
+INDUSTRIALISATION_SECTIONS.forEach(s => idToPage[s.id] = 'industrialisation');
+SYNTAXES_SECTIONS.forEach(s => idToPage[s.id] = 'syntaxes');
+REFERENCES_SECTIONS.forEach(s => idToPage[s.id] = 'references');
+function lexGroupKey(page, group){ return page ? (page + '-' + group) : 'other'; }
+const LEX_GROUP_LABELS = {other: "Autres / transverses"};
+Object.entries({modelisation: MODELISATION_GROUP_LABELS, maths: MATHS_GROUP_LABELS, industrialisation: INDUSTRIALISATION_GROUP_LABELS, syntaxes: SYNTAXES_GROUP_LABELS})
+  .forEach(([page, labels]) => { Object.entries(labels).forEach(([group, label]) => { LEX_GROUP_LABELS[lexGroupKey(page, group)] = label; }); });
+// Quelques termes du Lexique ne renvoient vers aucune section Concepts/Syntaxes dédiée (pas de href) —
+// classés ici à la main plutôt que dans une section "Autres / transverses" (page/group réels malgré tout,
+// pour rester cohérent avec la règle "un vrai groupe du site" ci-dessus).
+const LEX_MANUAL_SECTION = {
+  "Cross-Entropy": {page:"modelisation", group:"ml", subgroup:"Entraînement (fit)"},
+  "Hyperparamètre": {page:"modelisation", group:"ml", subgroup:"Concepts Modèles"},
+  "MAP (Maximum a Posteriori)": {page:"maths", group:"proba", subgroup:"Général"},
+  "Curse of Dimensionality (fléau de la dimension)": {page:"modelisation", group:"ml", subgroup:"Data Preparation"},
+};
+// Union des 3 pages issues de l'ancien "Concepts" (Modélisation/Maths/Industrialisation) — le
+// regroupement du Lexique se fait par `group`/`subgroup`/`subsubgroup` réels (cf.
+// doc-implementation/lexique-tech.md).
+const ALL_CONCEPT_SECTIONS = [...MODELISATION_SECTIONS, ...MATHS_SECTIONS, ...INDUSTRIALISATION_SECTIONS];
+// Section (id -> page/group/subgroup/subsubgroup réels) connue à partir des cartes
+// Modélisation/Maths/Industrialisation & Syntaxes déjà chargées
+const lexIdToSection = {};
+ALL_CONCEPT_SECTIONS.forEach(s => lexIdToSection[s.id] = {page: idToPage[s.id], group:s.group, subgroup:s.subgroup || null, subsubgroup:s.subsubgroup || null});
+SYNTAXES_SECTIONS.forEach(s => { if(!(s.id in lexIdToSection)) lexIdToSection[s.id] = {page: idToPage[s.id], group:s.group, subgroup:s.subgroup || null, subsubgroup:s.subsubgroup || null}; });
+// Ordre des groupes / sous-groupes / sous-sous-groupes = ordre naturel des fichiers de données
+// (mêmes priorités que la sidebar réelle Modélisation/Maths/Industrialisation/Syntaxes).
+const lexGroupOrder = [];
+const lexSubgroupOrderByGroup = {};
+const lexSubsubgroupOrderByGroupSubgroup = {};
+[...ALL_CONCEPT_SECTIONS, ...SYNTAXES_SECTIONS].forEach(s => {
+  const group = lexGroupKey(idToPage[s.id], s.group);
+  const subgroup = s.subgroup || 'Général';
+  if (!lexGroupOrder.includes(group)) lexGroupOrder.push(group);
+  if (!lexSubgroupOrderByGroup[group]) lexSubgroupOrderByGroup[group] = [];
+  if (!lexSubgroupOrderByGroup[group].includes(subgroup)) lexSubgroupOrderByGroup[group].push(subgroup);
+  if (s.subsubgroup){
+    const subsubKey = group + '|' + subgroup;
+    if (!lexSubsubgroupOrderByGroupSubgroup[subsubKey]) lexSubsubgroupOrderByGroupSubgroup[subsubKey] = [];
+    if (!lexSubsubgroupOrderByGroupSubgroup[subsubKey].includes(s.subsubgroup)) lexSubsubgroupOrderByGroupSubgroup[subsubKey].push(s.subsubgroup);
+  }
+});
+lexGroupOrder.push('other');
+
+// Regroupe les termes du Lexique par group -> subgroup -> subsubgroup (optionnel), dans l'ordre défini ci-dessus
+const lexByGroup = {};
+LEXIQUE_TERMS.forEach(entry => {
+  const m = entry.d.match(/href="#([\w-]+)"/);
+  const id = m ? m[1] : null;
+  const section = id ? lexIdToSection[id] : null;
+  const manual = LEX_MANUAL_SECTION[entry.t];
+  const page = section ? section.page : (manual ? manual.page : null);
+  const rawGroup = section ? section.group : (manual ? manual.group : null);
+  const subgroup = (section && section.subgroup) || (manual && manual.subgroup) || 'Général';
+  const subsubgroup = section ? section.subsubgroup : null;
+  const group = lexGroupKey(page, rawGroup);
+  if (!lexByGroup[group]) lexByGroup[group] = {};
+  if (!lexByGroup[group][subgroup]) lexByGroup[group][subgroup] = {_flat: []};
+  const bucket = lexByGroup[group][subgroup];
+  if (subsubgroup){
+    if (!bucket[subsubgroup]) bucket[subsubgroup] = [];
+    bucket[subsubgroup].push(entry);
+  } else {
+    bucket._flat.push(entry);
+  }
+});
+
+const navLexGroupsEl = document.getElementById('nav-lex-groups');
+const lexGroupedEl = document.getElementById('lex-grouped');
+lexGroupOrder.filter(g => lexByGroup[g]).forEach(group => {
+  // Nuage de tags de la sidebar, sur 2 niveaux : le groupe (tag plein), puis ses sous-groupes
+  // (petits tags juste en dessous) — toujours visibles, pas d'accordéon à déplier.
+  // `group` (clé composée `page-group`, cf. plus haut) est déjà un nom de classe CSS valide —
+  // pas besoin d'une table de correspondance séparée (plus de couleur par catégorie depuis le
+  // 2026-08-21, ce hook ne sert plus qu'au ciblage JS/DOM).
+  const groupCardClass = group;
+  const navTagGroup = document.createElement('div');
+  navTagGroup.className = 'nav-tag-group';
+  const navTag = document.createElement('a');
+  navTag.className = 'nav-tag ' + groupCardClass;
+  const groupTargetId = 'lexg-' + slugify(group);
+  navTag.href = '#' + groupTargetId;
+  navTag.innerHTML = LEX_GROUP_LABELS[group] || group;
+  wireLexAnchor(navTag, groupTargetId);
+  navTagGroup.appendChild(navTag);
+  const navSubTagRow = document.createElement('div');
+  navSubTagRow.className = 'nav-tag-sub-row';
+  navTagGroup.appendChild(navSubTagRow);
+  navLexGroupsEl.appendChild(navTagGroup);
+
+  const groupBlock = document.createElement('div');
+  groupBlock.className = 'lex-group-card ' + groupCardClass;
+  groupBlock.id = 'lexg-' + slugify(group);
+  const groupHeading = document.createElement('h2');
+  groupHeading.className = 'lex-group-card-title';
+  groupHeading.innerHTML = LEX_GROUP_LABELS[group] || group;
+  groupBlock.appendChild(groupHeading);
+  lexGroupedEl.appendChild(groupBlock);
+
+  const subgroups = Object.keys(lexByGroup[group]);
+  const orderedSubgroups = (lexSubgroupOrderByGroup[group] || []).filter(sg => subgroups.includes(sg))
+    .concat(subgroups.filter(sg => !(lexSubgroupOrderByGroup[group] || []).includes(sg)));
+  orderedSubgroups.forEach(subgroup => {
+    const subgroupId = 'lexg-' + slugify(group) + '-' + slugify(subgroup);
+    const navSubTag = document.createElement('a');
+    navSubTag.className = 'nav-tag-sub ' + groupCardClass;
+    navSubTag.href = '#' + subgroupId;
+    navSubTag.textContent = subgroup;
+    wireLexAnchor(navSubTag, subgroupId);
+    navSubTagRow.appendChild(navSubTag);
+
+    const subgroupCard = document.createElement('div');
+    subgroupCard.className = 'lex-subgroup-card';
+    subgroupCard.id = subgroupId;
+    const subgroupTitle = document.createElement('h3');
+    subgroupTitle.className = 'lex-subgroup-card-title';
+    subgroupTitle.textContent = subgroup;
+    subgroupCard.appendChild(subgroupTitle);
+
+    function appendChips(container, entries){
+      const chipsWrap = document.createElement('div');
+      chipsWrap.className = 'lex-term-chips';
+      // Si raccourcir deux termes du même paquet donne la même étiquette (ex: "Soft Margin (SVM)" et
+      // "Support Vector Machine (SVM)" -> "SVM" tous les deux), on revient au nom complet pour lever l'ambiguïté
+      const labels = entries.map(e => chipLabel(e.t));
+      const counts = {};
+      labels.forEach(l => { counts[l] = (counts[l] || 0) + 1; });
+      entries.forEach((entry, i) => {
+        const chip = document.createElement('a');
+        chip.className = 'lex-term-chip';
+        const targetId = 'lexterm-' + slugify(entry.t);
+        chip.href = '#' + targetId;
+        chip.textContent = counts[labels[i]] > 1 ? entry.t : labels[i];
+        chip.dataset.tooltip = stripHtmlToText(entry.d);
+        wireLexAnchor(chip, targetId);
+        chipsWrap.appendChild(chip);
+      });
+      container.appendChild(chipsWrap);
+    }
+
+    const bucket = lexByGroup[group][subgroup];
+    if (bucket._flat.length) appendChips(subgroupCard, bucket._flat);
+    const subsubKey = group + '|' + subgroup;
+    const subsubNames = Object.keys(bucket).filter(k => k !== '_flat');
+    const orderedSubsub = (lexSubsubgroupOrderByGroupSubgroup[subsubKey] || []).filter(n => subsubNames.includes(n))
+      .concat(subsubNames.filter(n => !(lexSubsubgroupOrderByGroupSubgroup[subsubKey] || []).includes(n)));
+    orderedSubsub.forEach(subsubgroup => {
+      const subsubBlock = document.createElement('div');
+      subsubBlock.className = 'lex-subsubgroup';
+      const subsubTitle = document.createElement('h4');
+      subsubTitle.className = 'lex-subsubgroup-title';
+      subsubTitle.textContent = subsubgroup;
+      subsubBlock.appendChild(subsubTitle);
+      appendChips(subsubBlock, bucket[subsubgroup]);
+      subgroupCard.appendChild(subsubBlock);
+    });
+
+    groupBlock.appendChild(subgroupCard);
+  });
+});
+
+// Empêche l'infobulle d'une puce proche du bord gauche/droit de déborder de #main-root : ce
+// conteneur a overflow-y:auto, donc son overflow-x est automatiquement clippé (règle CSS Overflow
+// Level 3), et une infobulle centrée sur une petite puce en tout début de ligne finit tronquée sous
+// la sidebar. On décale l'infobulle (variable CSS --tt-shift) juste avant qu'elle s'affiche.
+const LEX_TOOLTIP_WIDTH = 240, LEX_TOOLTIP_MARGIN = 10;
+lexGroupedEl.addEventListener('mouseover', (e) => {
+  const chip = e.target.closest('.lex-term-chip[data-tooltip]');
+  if (!chip) return;
+  const chipRect = chip.getBoundingClientRect();
+  const rootRect = document.getElementById('main-root').getBoundingClientRect();
+  const halfWidth = LEX_TOOLTIP_WIDTH / 2;
+  const centerX = chipRect.left + chipRect.width / 2;
+  let shift = 0;
+  if (centerX - halfWidth < rootRect.left + LEX_TOOLTIP_MARGIN){
+    shift = (rootRect.left + LEX_TOOLTIP_MARGIN) - (centerX - halfWidth);
+  } else if (centerX + halfWidth > rootRect.right - LEX_TOOLTIP_MARGIN){
+    shift = (rootRect.right - LEX_TOOLTIP_MARGIN) - (centerX + halfWidth);
+  }
+  chip.style.setProperty('--tt-shift', shift + 'px');
+});
+
+/* ---------- Navigation entre pages (onglets) ---------- */
+const PAGES = ['modelisation', 'maths', 'industrialisation', 'code', 'syntaxes', 'lexique', 'references'];
+const DEFAULT_ID = {modelisation: MODELISATION_SECTIONS[0].id, maths: MATHS_SECTIONS[0].id, industrialisation: INDUSTRIALISATION_SECTIONS[0].id, syntaxes: SYNTAXES_SECTIONS[0].id, references: REFERENCES_SECTIONS[0].id};
+const lastSectionForPage = {};
+let currentPage = 'modelisation';
+// idToPage est défini plus haut (avant le rendu Lexique, qui en a besoin pour désambiguïser les
+// clés de groupe réutilisées entre pages, cf. commentaire "Rendu Lexique" ci-dessus).
+
+function showPage(page){
+  if (!PAGES.includes(page)) return;
+  currentPage = page;
+  document.body.dataset.page = page;
+  document.querySelectorAll('.top-tab').forEach(el => el.classList.toggle('active', el.dataset.page === page));
+  document.querySelectorAll('.page-navbody').forEach(el => el.classList.toggle('active', el.id === 'navbody-' + page));
+  document.querySelectorAll('.page-main').forEach(el => el.classList.toggle('active', el.id === 'mainpage-' + page));
+}
+
+function showSection(id){
+  const page = idToPage[id];
+  if (page){
+    lastSectionForPage[page] = id;
+    if (page !== currentPage) showPage(page);
+  }
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.target === id);
+  });
+  document.querySelectorAll('.panel').forEach(el => {
+    el.classList.toggle('active', el.id === 'panel-' + id);
+  });
+  const activeBtn = document.querySelector('.nav-item[data-target="' + id + '"]');
+  if (activeBtn){
+    activeBtn.closest('.nav-group').classList.remove('collapsed');
+    const subgroupEl = activeBtn.closest('.nav-subgroup');
+    if (subgroupEl) subgroupEl.classList.remove('collapsed');
+  }
+  // history.replaceState plutôt que location.hash= : cette dernière déclenche un événement
+  // hashchange (même si c'est CE code-ci, via showSection, qui vient de le causer) — routeToHash()
+  // se relance alors en cascade et écrase par son propre `main-root.scrollTo(0,0)` tout défilement
+  // qu'un appelant de showSection() aurait positionné juste après (cf. routeToHash, cas générique,
+  // qui appelle showSection PUIS scrollElementIntoMainRoot — le second scroll se faisait annuler par
+  // ce rappel en cascade, de façon asynchrone donc invisible en testant pas à pas).
+  if (window.location.hash.slice(1) !== id) history.replaceState(null, '', '#' + id);
+  document.getElementById('main-root').scrollTo(0, 0);
+  window.scrollTo(0, 0);
+}
+
+document.querySelectorAll('.top-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const page = btn.dataset.page;
+    if (page === 'lexique' || page === 'code'){
+      // Pages sans "sections" (pas d'entrée dans idToPage) : même traitement que Lexique, juste
+      // afficher la page — un hash générique ('#lexique'/'#code') suffit, pas d'id de section.
+      if (window.location.hash.slice(1) === page) showPage(page);
+      else window.location.hash = page;
+    } else {
+      window.location.hash = lastSectionForPage[page] || DEFAULT_ID[page];
+    }
+  });
+});
+
+function routeToHash(){
+  const id = window.location.hash ? window.location.hash.slice(1) : '';
+  if (id && idToPage[id]){
+    showSection(id);
+  } else if (id === 'lexique'){
+    showPage('lexique');
+  } else if (id === 'code'){
+    showPage('code');
+  } else if (id){
+    // Ancre SANS entrée dans idToPage (seuls les ids de section top-niveau Modélisation/Maths/
+    // Industrialisation/Syntaxes/Refs y sont) : terme/cadre de groupe du Lexique, OU sous-étape à
+    // l'intérieur d'une carte (ex: "wf0-split" dans Workflow ML) — sans ce cas, un lien vers une
+    // telle ancre (ou un reload/bookmark dessus) ne correspondait à aucune branche ci-dessus : la
+    // page restait sur son état par défaut (sidebar repliée, aucun panel actif) au lieu de
+    // rester/revenir sur la bonne page et défiler jusqu'à la bonne ancre. Générique : marche pour
+    // n'importe quelle page, pas que le Lexique.
+    const target = document.getElementById(id);
+    if (target){
+      const panelEl = target.closest('.panel');
+      if (panelEl && panelEl.id.startsWith('panel-')){
+        showSection(panelEl.id.slice('panel-'.length));
+      } else {
+        const pageMainEl = target.closest('.page-main');
+        if (pageMainEl) showPage(pageMainEl.id.replace('mainpage-', ''));
+      }
+      scrollElementIntoMainRoot(target);
+      // Filet de sécurité : sur un chargement direct / retour arrière-avant / hash tapé à la main,
+      // le navigateur a déjà tenté SON PROPRE "scroll to fragment" natif avant que ce handler ne
+      // s'exécute (cf. scrollElementIntoMainRoot ci-dessus) — on l'annule après coup.
+      window.scrollTo(0, 0);
+    }
+  } else {
+    showPage('modelisation');
+    showSection(DEFAULT_ID.modelisation);
+  }
+}
+window.addEventListener('hashchange', routeToHash);
+routeToHash();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script>
+  renderMathInElement(document.getElementById('main-root'), {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "$", right: "$", display: false},
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ],
+    throwOnError: false
+  });
+</script>
+
+<script>
+/* ---------- Nav par lettre du Lexique (scroll-spy) ---------- */
+(function(){
+  const letterLinks = Array.from(document.querySelectorAll('.nav-letter'));
+  const letterSections = letterLinks.map(a => document.getElementById(a.getAttribute('href').slice(1)));
+  function onScroll(){
+    let activeIdx = 0;
+    for (let i = 0; i < letterSections.length; i++){
+      if (letterSections[i] && letterSections[i].getBoundingClientRect().top < 120) activeIdx = i;
+    }
+    letterLinks.forEach((a, i) => a.classList.toggle('active', i === activeIdx));
+  }
+  document.getElementById('main-root').addEventListener('scroll', onScroll);
+  window.addEventListener('scroll', onScroll);
+  onScroll();
+})();
+</script>
+
+<script>
+/* ---------- Générateur de code — Workflow ML/DL ---------- */
+(function(){
+  const state = {
+    kind: 'ml',                 // 'ml' | 'dl'
+    task: 'classification',     // 'regression' | 'classification' | 'clustering' (clustering: ml only)
+    dlArch: 'tabular',          // 'tabular' | 'image' | 'sequence' (dl uniquement)
+    hasCategorical: true,       // bool — colonnes catégorielles présentes ; si oui, nominales ET ordinales sont TOUJOURS gérées ensemble (ColumnTransformer), pas de mode "l'un ou l'autre"
+    scaling: 'robust',          // 'none' | 'standard' | 'minmax' | 'robust' — défaut ML (robuste aux outliers) ; recalé sur 'minmax' pour le Deep Learning (cf. toggle kind dans wireForm)
+    testSize: 0.2,
+    stratify: true,
+    mlModel: 'logreg_c',
+    mlCriterion: 'gini',        // ml uniquement, seulement pour les modèles avec criterionOptions (Tree/Forest) — recalé automatiquement (resetMlCriterion) si le modèle change
+    numClasses: 2,               // dl classification : binaire (2) vs multi (>2)
+    dlLoss: 'binary_crossentropy', // dl uniquement — recalée automatiquement (resetDlLoss) si task/numClasses change
+    metrics: {},                  // rempli par resetMetrics()
+    tuning: 'gridsearch',         // ml : 'none' | 'gridsearch' | 'randomsearch'
+    earlyStop: true,              // dl
+    crossval: true,               // ml
+    // ---- Time Series (task === 'timeseries', ml uniquement) ----
+    tsModel: 'arima',             // 'arima' | 'sarima' | 'prophet' | 'darts'
+    tsFreq: 'D',                  // 'D' (jour) | 'MS' (début de mois) | 'ME' (fin de mois)
+    tsSeasonalPeriod: 12,         // S — période saisonnière (sarima/darts)
+    tsAutoOrder: true,            // chercher (p,d,q) automatiquement (auto_arima) plutôt qu'un ordre manuel
+    tsDiagnostic: true,           // décomposition + test ADF + ACF/PACF
+  };
+  const INITIAL_STATE = JSON.parse(JSON.stringify(state)); // capture de l'état par défaut, pour le bouton Réinitialiser
+  function resetState(){
+    Object.assign(state, JSON.parse(JSON.stringify(INITIAL_STATE)));
+    resetMetrics();
+    renderForm();
+    renderCode();
+  }
+
+  // ---------- Catalogue des modèles (uniquement ce qui est déjà couvert par le mémo, cf. page Syntaxes) ----------
+  // `code` porte toujours, en commentaire, la loss/l'objectif réellement optimisé par le modèle —
+  // la plupart des estimateurs sklearn n'exposent PAS de paramètre `loss` modifiable (contrairement
+  // à Keras/.compile()) : c'est fixé par la définition mathématique de l'algorithme (ex.
+  // LinearRegression = MSE fixe, LogisticRegression = log loss fixe), donc plutôt qu'un faux
+  // paramètre, on documente ce qui est minimisé en interne. SEULE exception dans ce catalogue :
+  // DecisionTree*/RandomForest*, qui exposent un vrai paramètre `criterion` — cf. CRITERION_REG/
+  // CRITERION_CLS ci-dessous, injecté dynamiquement via les tokens {{criterion}}/{{criterionNote}}
+  // dans `code` (cf. genModel()/resetMlCriterion()), plutôt que figé comme les autres modèles.
+  const CRITERION_REG = [
+    {v:'squared_error', label:'Squared Error (MSE) — défaut', note:"minimise l'erreur quadratique (MSE) à chaque split"},
+    {v:'friedman_mse', label:'Friedman MSE', note:'minimise une variante de la MSE optimisée pour le boosting (Friedman)'},
+    {v:'absolute_error', label:'Absolute Error (MAE)', note:"minimise l'erreur absolue — plus robuste aux outliers, plus lent à calculer"},
+    {v:'poisson', label:'Poisson', note:'minimise la déviance de Poisson — adapté à une cible de comptage'},
+  ];
+  const CRITERION_CLS = [
+    {v:'gini', label:'Gini — défaut', note:"minimise l'impureté de Gini à chaque split"},
+    {v:'entropy', label:'Entropy', note:"minimise l'entropie (gain d'information) à chaque split"},
+    {v:'log_loss', label:'Log Loss', note:'minimise la log loss à chaque split'},
+  ];
+
+  const ML_MODELS = {
+    regression: [
+      {v:'linreg_r', label:'LinearRegression', imp:'from sklearn.linear_model import LinearRegression', code:"# optimise la MSE (erreur quadratique), sans régularisation — non configurable\nmodel = LinearRegression()", grid:'{}  # pas d\'hyperparamètre à tuner pour une régression linéaire simple'},
+      {v:'ridge_r', label:'Ridge', imp:'from sklearn.linear_model import Ridge', code:"# optimise la MSE + pénalité L2 — non configurable\nmodel = Ridge(alpha=1.0)", grid:'{"alpha": [0.01, 0.1, 1, 10, 100]}'},
+      {v:'lasso_r', label:'Lasso', imp:'from sklearn.linear_model import Lasso', code:"# optimise la MSE + pénalité L1 — non configurable\nmodel = Lasso(alpha=0.1)", grid:'{"alpha": [0.001, 0.01, 0.1, 1, 10]}'},
+      {v:'elasticnet_r', label:'ElasticNet', imp:'from sklearn.linear_model import ElasticNet', code:"# optimise la MSE + pénalités L1 et L2 combinées — non configurable\nmodel = ElasticNet(alpha=1.0, l1_ratio=0.5)", grid:'{"alpha": [0.01, 0.1, 1, 10], "l1_ratio": [0.2, 0.5, 0.8]}'},
+      {v:'knn_r', label:'KNeighborsRegressor', imp:'from sklearn.neighbors import KNeighborsRegressor', code:"# pas de loss optimisée — moyenne des k voisins les plus proches\nmodel = KNeighborsRegressor(n_neighbors=5)", grid:'{"n_neighbors": [3, 5, 10, 20]}'},
+      {v:'svm_r', label:'SVR', imp:'from sklearn.svm import SVR', code:"# optimise la loss epsilon-insensible — non configurable (SVR ; LinearSVR a un param loss)\nmodel = SVR(kernel=\"rbf\", C=1.0)", grid:'{"C": [0.1, 1, 10, 100], "gamma": ["scale", "auto"]}'},
+      {v:'tree_r', label:'DecisionTreeRegressor', imp:'from sklearn.tree import DecisionTreeRegressor', code:"# {{criterionNote}}\nmodel = DecisionTreeRegressor({{criterion}}max_depth=5, random_state=42)", grid:'{"max_depth": [3, 5, 8, None], "min_samples_leaf": [1, 5, 10]}', criterionOptions: CRITERION_REG},
+      {v:'forest_r', label:'RandomForestRegressor', imp:'from sklearn.ensemble import RandomForestRegressor', code:"# ensemble d'arbres, chacun : {{criterionNote}}\nmodel = RandomForestRegressor({{criterion}}n_estimators=200, random_state=42)", grid:'{"n_estimators": [100, 200, 400], "max_depth": [5, 10, None]}', criterionOptions: CRITERION_REG},
+    ],
+    classification: [
+      {v:'logreg_c', label:'LogisticRegression', imp:'from sklearn.linear_model import LogisticRegression', code:"# optimise la log loss (cross-entropy) — non configurable\nmodel = LogisticRegression(max_iter=1000)", grid:'{"C": [0.01, 0.1, 1, 10]}'},
+      {v:'knn_c', label:'KNeighborsClassifier', imp:'from sklearn.neighbors import KNeighborsClassifier', code:"# pas de loss optimisée — vote majoritaire des k voisins les plus proches\nmodel = KNeighborsClassifier(n_neighbors=5)", grid:'{"n_neighbors": [3, 5, 10, 20]}'},
+      {v:'svm_c', label:'SVC', imp:'from sklearn.svm import SVC', code:"# optimise la hinge loss (marge maximale) — non configurable (SVC ; LinearSVC a un param loss)\nmodel = SVC(kernel=\"rbf\", C=1.0, probability=True)", grid:'{"C": [0.1, 1, 10, 100], "gamma": ["scale", "auto"]}'},
+      {v:'tree_c', label:'DecisionTreeClassifier', imp:'from sklearn.tree import DecisionTreeClassifier', code:"# {{criterionNote}}\nmodel = DecisionTreeClassifier({{criterion}}max_depth=5, random_state=42)", grid:'{"max_depth": [3, 5, 8, None], "min_samples_leaf": [1, 5, 10]}', criterionOptions: CRITERION_CLS},
+      {v:'forest_c', label:'RandomForestClassifier', imp:'from sklearn.ensemble import RandomForestClassifier', code:"# ensemble d'arbres, chacun : {{criterionNote}}\nmodel = RandomForestClassifier({{criterion}}n_estimators=200, random_state=42)", grid:'{"n_estimators": [100, 200, 400], "max_depth": [5, 10, None]}', criterionOptions: CRITERION_CLS},
+    ],
+    clustering: [
+      {v:'kmeans', label:'KMeans', imp:'from sklearn.cluster import KMeans', code:"# minimise l'inertia (somme des distances au carré aux centroïdes) — non configurable\nmodel = KMeans(n_clusters=3, random_state=42)", grid:null},
+    ],
+    dimreduction: [
+      {v:'pca', label:'PCA', imp:'from sklearn.decomposition import PCA', code:"# maximise la variance captée par les composantes — pas de \"loss\" au sens classique\nmodel = PCA(n_components=2)", grid:null},
+      {v:'truncated_svd', label:'TruncatedSVD (matrices creuses)', imp:'from sklearn.decomposition import TruncatedSVD', code:"# équivalent PCA SANS centrage — pour matrices creuses (comptage, texte)\nmodel = TruncatedSVD(n_components=2, random_state=42)", grid:null},
+    ],
+  };
+
+  // sk = nom sklearn (évaluation ML) ; dl = nom de métrique Keras valide dans .compile() (null si pas
+  // d'équivalent natif — ex: F1 n'existe pas comme string Keras, cf. genCompile() qui filtre ces cas)
+  const METRICS = {
+    regression: [
+      {v:'r2', label:'R²', sk:'r2_score', dl:null, deflt:true},
+      {v:'mae', label:'MAE', sk:'mean_absolute_error', dl:'mae', deflt:true},
+      {v:'rmse', label:'RMSE', sk:null, dl:'RootMeanSquaredError', deflt:false},
+    ],
+    classification: [
+      {v:'accuracy', label:'Accuracy', sk:'accuracy_score', dl:'accuracy', deflt:true},
+      {v:'precision', label:'Precision', sk:'precision_score', dl:'Precision', deflt:false},
+      {v:'recall', label:'Recall', sk:'recall_score', dl:'Recall', deflt:false},
+      {v:'f1', label:'F1', sk:'f1_score', dl:null, deflt:true},
+      {v:'roc_auc', label:'ROC-AUC', sk:'roc_auc_score', dl:'AUC', deflt:false},
+    ],
+    clustering: [
+      {v:'silhouette', label:'Silhouette Score', sk:'silhouette_score', dl:null, deflt:true},
+    ],
+    timeseries: [
+      {v:'mae', label:'MAE', deflt:true},
+      {v:'rmse', label:'RMSE', deflt:true},
+      {v:'mape', label:'MAPE', deflt:false},
+    ],
+  };
+
+  function resetMetrics(){
+    state.metrics = {};
+    (METRICS[state.task] || []).forEach(m => { state.metrics[m.v] = m.deflt; });
+  }
+  resetMetrics();
+
+  // Tâches ML non supervisées : pas de target (y), donc pas de split train/test ni de baseline —
+  // regroupe clustering et réduction de dimension, qui partagent cette caractéristique.
+  function isUnsupervised(){
+    return state.task === 'clustering' || state.task === 'dimreduction';
+  }
+
+  function currentModelList(){
+    return ML_MODELS[state.task] || [];
+  }
+  function currentModelDef(){
+    return currentModelList().find(m => m.v === state.mlModel) || currentModelList()[0];
+  }
+  function resetMlCriterion(){
+    const opts = currentModelDef().criterionOptions;
+    if (!opts) return; // modèle sans criterion configurable (la plupart) — rien à recaler
+    if (!opts.find(o => o.v === state.mlCriterion)) state.mlCriterion = opts[0].v;
+  }
+
+  // ============================================================
+  //  Rendu du formulaire (panneau de gauche)
+  // ============================================================
+  const formEl = document.getElementById('code-form');
+
+  function renderForm(){
+    const isClustering = state.task === 'clustering';
+    const isDimReduction = state.task === 'dimreduction';
+    const isTs = state.task === 'timeseries';
+    const isDl = state.kind === 'dl';
+    const dlTabular = isDl && state.dlArch === 'tabular';
+    const showDataPrepDetail = !isDl || dlTabular; // image/séquence : prétraitement spécifique, pas les mêmes options
+
+    formEl.innerHTML = `
+      <div class="code-form-top">
+        <button type="button" id="code-reset-btn" class="code-reset-btn" title="Revenir à la configuration par défaut">↺ Réinitialiser</button>
+      </div>
+
+      <div class="code-form-group">
+        <span class="code-form-label">Type de projet</span>
+        <div class="code-kind-toggle">
+          <button type="button" data-act="kind" data-val="ml" class="${!isDl ? 'active' : ''}">Machine Learning</button>
+          <button type="button" data-act="kind" data-val="dl" class="${isDl ? 'active' : ''}">Deep Learning</button>
+        </div>
+      </div>
+
+      <div class="code-form-group">
+        <span class="code-form-label">Tâche</span>
+        <div class="code-form-row"><label><input type="radio" name="task" value="regression" ${state.task==='regression'?'checked':''}> Régression</label></div>
+        ${!isDl ? `<div class="code-form-row"><label><input type="radio" name="task" value="timeseries" ${isTs?'checked':''}> Time Series</label></div>` : ''}
+        <div class="code-form-row"><label><input type="radio" name="task" value="classification" ${state.task==='classification'?'checked':''}> Classification</label></div>
+        ${!isDl ? `<div class="code-form-row"><label><input type="radio" name="task" value="clustering" ${isClustering?'checked':''}> Clustering</label></div>` : ''}
+        ${!isDl ? `<div class="code-form-row"><label><input type="radio" name="task" value="dimreduction" ${isDimReduction?'checked':''}> Réduction de dimension</label></div>` : ''}
+      </div>
+
+      ${isDl ? `
+      <div class="code-form-group">
+        <span class="code-form-label">Type de donnée</span>
+        <select data-act="dlArch">
+          <option value="tabular" ${state.dlArch==='tabular'?'selected':''}>Tabulaire (Dense)</option>
+          <option value="image" ${state.dlArch==='image'?'selected':''}>Image (CNN)</option>
+          <option value="sequence" ${state.dlArch==='sequence'?'selected':''}>Séquence (RNN/LSTM)</option>
+        </select>
+      </div>` : ''}
+
+      ${(isDl && state.task==='classification') ? `
+      <div class="code-form-group">
+        <span class="code-form-label">Nombre de classes</span>
+        <select data-act="numClasses">
+          <option value="2" ${state.numClasses===2?'selected':''}>2 (binaire)</option>
+          <option value="3" ${state.numClasses===3?'selected':''}>3 ou plus (multi-classes)</option>
+        </select>
+      </div>` : ''}
+
+      ${isDl ? (() => { resetDlLoss(); return `
+      <div class="code-form-group">
+        <span class="code-form-label">Loss</span>
+        <select data-act="dlLoss">
+          ${dlLossOptions().map(o => `<option value="${o.v}" ${state.dlLoss===o.v?'selected':''}>${o.label}</option>`).join('')}
+        </select>
+      </div>`; })() : ''}
+
+      <div class="code-form-divider"></div>
+
+      ${isTs ? `
+      <div class="code-form-group">
+        <span class="code-form-label">Fréquence de la série</span>
+        <select data-act="tsFreq">
+          <option value="D" ${state.tsFreq==='D'?'selected':''}>Jour (D)</option>
+          <option value="MS" ${state.tsFreq==='MS'?'selected':''}>Mois — début (MS)</option>
+          <option value="ME" ${state.tsFreq==='ME'?'selected':''}>Mois — fin (ME)</option>
+        </select>
+      </div>` : ''}
+
+      ${isTs ? `
+      <div class="code-form-group">
+        <span class="code-form-label">Valeurs manquantes</span>
+        <div class="code-form-row"><label><input type="checkbox" data-act="tsDiagnostic" ${state.tsDiagnostic?'checked':''}> Diagnostic (décomposition, test ADF, ACF/PACF)</label></div>
+      </div>` : ''}
+
+      ${(isTs || showDataPrepDetail) ? `
+      <div class="code-form-group">
+        <span class="code-form-label">Colonnes catégorielles &amp; scaling${isTs ? ' (exogènes)' : ''}</span>
+        <div class="code-form-row" style="margin-bottom:10px;">
+          <label><input type="checkbox" data-act="hasCategorical" ${state.hasCategorical?'checked':''}> Colonnes catégorielles présentes</label>
+        </div>
+        <div class="code-form-row">
+          <label style="display:block; opacity:.75; margin-bottom:4px; padding:0;">Feature Scaling</label>
+          <select data-act="scaling">
+            <option value="none" ${state.scaling==='none'?'selected':''}>Aucun</option>
+            <option value="standard" ${state.scaling==='standard'?'selected':''}>StandardScaler</option>
+            <option value="minmax" ${state.scaling==='minmax'?'selected':''}>MinMaxScaler</option>
+            <option value="robust" ${state.scaling==='robust'?'selected':''}>RobustScaler</option>
+          </select>
+        </div>
+      </div>` : ''}
+
+      ${(isTs || !isUnsupervised()) ? `
+      <div class="code-form-group">
+        <span class="code-form-label">Split ${isUnsupervised() ? '' : (isDl ? 'train / validation' : 'train / test')}</span>
+        ${isTs ? `
+        <div class="code-form-row">
+          <label style="display:block; opacity:.75; margin-bottom:4px; padding:0;">Taille du jeu de test (${Math.round(state.testSize*100)}%)</label>
+          <input type="number" data-act="testSize" min="0.1" max="0.5" step="0.05" value="${state.testSize}">
+        </div>
+        ` : `
+        <div class="code-form-row" style="margin-bottom:8px;">
+          <label style="display:block; opacity:.75; margin-bottom:4px; padding:0;">Taille du jeu de ${isDl?'validation':'test'} (${Math.round(state.testSize*100)}%)</label>
+          <input type="number" data-act="testSize" min="0.1" max="0.5" step="0.05" value="${state.testSize}">
+        </div>
+        ${state.task==='classification' ? `<div class="code-form-row"><label><input type="checkbox" data-act="stratify" ${state.stratify?'checked':''}> Stratify (préserver les proportions de classes)</label></div>` : ''}
+        `}
+      </div>` : ''}
+
+      <div class="code-form-divider"></div>
+
+      ${isTs ? `
+      <div class="code-form-group">
+        <span class="code-form-label">Modèle</span>
+        <select data-act="tsModel">
+          <option value="arima" ${state.tsModel==='arima'?'selected':''}>ARIMA (statsmodels)</option>
+          <option value="sarima" ${state.tsModel==='sarima'?'selected':''}>SARIMA — saisonnalité (statsmodels)</option>
+          <option value="prophet" ${state.tsModel==='prophet'?'selected':''}>Facebook Prophet</option>
+          <option value="darts" ${state.tsModel==='darts'?'selected':''}>darts — AutoARIMA</option>
+        </select>
+        ${(state.tsModel==='arima' || state.tsModel==='sarima') ? `<div class="code-form-row" style="margin-top:8px;"><label><input type="checkbox" data-act="tsAutoOrder" ${state.tsAutoOrder?'checked':''}> Chercher l'ordre automatiquement (auto_arima)</label></div>` : ''}
+        ${(state.tsModel==='sarima' || state.tsModel==='darts') ? `
+        <div class="code-form-row" style="margin-top:8px;">
+          <label style="display:block; opacity:.75; margin-bottom:4px; padding:0;">Période saisonnière (S)</label>
+          <input type="number" data-act="tsSeasonalPeriod" min="2" step="1" value="${state.tsSeasonalPeriod}">
+        </div>` : ''}
+      </div>` : !isDl ? `
+      <div class="code-form-group">
+        <span class="code-form-label">Modèle</span>
+        <select data-act="mlModel">
+          ${currentModelList().map(m => `<option value="${m.v}" ${state.mlModel===m.v?'selected':''}>${m.label}</option>`).join('')}
+        </select>
+      </div>
+      ${currentModelDef().criterionOptions ? (() => { resetMlCriterion(); return `
+      <div class="code-form-group">
+        <span class="code-form-label">Critère de split (criterion)</span>
+        <select data-act="mlCriterion">
+          ${currentModelDef().criterionOptions.map(o => `<option value="${o.v}" ${state.mlCriterion===o.v?'selected':''}>${o.label}</option>`).join('')}
+        </select>
+      </div>`; })() : ''}` : ''}
+
+      <div class="code-form-divider"></div>
+
+      ${isClustering ? `
+      <div class="code-form-group">
+        <span class="code-form-label">Métriques</span>
+        <div class="code-form-row"><label><input type="checkbox" data-act="metric" data-metric="silhouette" ${state.metrics.silhouette?'checked':''}> Silhouette Score</label></div>
+      </div>
+      <div class="code-form-divider"></div>` : isDimReduction ? '' : `
+      <div class="code-form-group">
+        <span class="code-form-label">Métriques ${isDl ? '(compile + évaluation)' : "d'évaluation"}</span>
+        ${(METRICS[state.task]||[]).map(m => `<div class="code-form-row"><label><input type="checkbox" data-act="metric" data-metric="${m.v}" ${state.metrics[m.v]?'checked':''}> ${m.label}</label></div>`).join('')}
+      </div>
+      <div class="code-form-divider"></div>`}
+
+      ${(!isTs && !isDimReduction) ? `
+      <div class="code-form-group">
+        <span class="code-form-label">Tuning &amp; vérification</span>
+        ${!isDl ? `
+        <div class="code-form-row" style="margin-bottom:8px;">
+          <label style="display:block; opacity:.75; margin-bottom:4px; padding:0;">Recherche d'hyperparamètres</label>
+          <select data-act="tuning">
+            <option value="none" ${state.tuning==='none'?'selected':''}>Aucune</option>
+            <option value="gridsearch" ${state.tuning==='gridsearch'?'selected':''}>GridSearchCV</option>
+            <option value="randomsearch" ${state.tuning==='randomsearch'?'selected':''}>RandomizedSearchCV</option>
+          </select>
+        </div>
+        ${!isClustering ? `<div class="code-form-row"><label><input type="checkbox" data-act="crossval" ${state.crossval?'checked':''}> Cross-validation (cross_validate, cv=5)</label></div>` : ''}
+        ` : `
+        <div class="code-form-row"><label><input type="checkbox" data-act="earlyStop" ${state.earlyStop?'checked':''}> Early Stopping (+ jeu de validation)</label></div>
+        `}
+      </div>` : ''}
+    `;
+
+    wireForm();
+  }
+
+  function wireForm(){
+    const resetBtn = formEl.querySelector('#code-reset-btn');
+    if (resetBtn) resetBtn.addEventListener('click', resetState);
+    formEl.querySelectorAll('[data-act="kind"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.kind = btn.dataset.val;
+        if (state.kind === 'dl' && (state.task === 'clustering' || state.task === 'dimreduction' || state.task === 'timeseries')) state.task = 'classification';
+        if (state.kind === 'ml') state.dlArch = 'tabular';
+        // RobustScaler par défaut en ML (robuste aux outliers) ; MinMaxScaler en DL (entrées bornées,
+        // cohérent avec la normalisation [0,1] déjà utilisée pour les images — meilleure stabilité du
+        // gradient qu'un RobustScaler dont l'échelle de sortie n'est pas bornée).
+        state.scaling = state.kind === 'dl' ? 'minmax' : 'robust';
+        resetMetrics();
+        renderForm();
+        renderCode();
+      });
+    });
+    formEl.querySelectorAll('input[name="task"]').forEach(r => {
+      r.addEventListener('change', () => {
+        state.task = r.value;
+        // recale le modèle ML sélectionné sur la liste de la nouvelle tâche
+        const list = currentModelList();
+        if (list.length && !list.find(m => m.v === state.mlModel)) state.mlModel = list[0].v;
+        resetMetrics();
+        renderForm();
+        renderCode();
+      });
+    });
+    const bindSelect = (sel, key, parse) => {
+      const el = formEl.querySelector(sel);
+      if (!el) return;
+      el.addEventListener('change', () => {
+        state[key] = parse ? parse(el.value) : el.value;
+        renderForm();
+        renderCode();
+      });
+    };
+    bindSelect('[data-act="dlArch"]', 'dlArch');
+    bindSelect('[data-act="numClasses"]', 'numClasses', v => parseInt(v, 10));
+    bindSelect('[data-act="dlLoss"]', 'dlLoss');
+    bindSelect('[data-act="scaling"]', 'scaling');
+    bindSelect('[data-act="mlModel"]', 'mlModel');
+    bindSelect('[data-act="mlCriterion"]', 'mlCriterion');
+    bindSelect('[data-act="tuning"]', 'tuning');
+    bindSelect('[data-act="tsFreq"]', 'tsFreq');
+    bindSelect('[data-act="tsSeasonalPeriod"]', 'tsSeasonalPeriod', v => parseInt(v, 10));
+    const tsModelEl = formEl.querySelector('[data-act="tsModel"]');
+    if (tsModelEl) tsModelEl.addEventListener('change', () => {
+      state.tsModel = tsModelEl.value;
+      renderForm(); // le choix du modèle TS dévoile/masque d'autres champs (ordre auto, saisonnalité)
+      renderCode();
+    });
+    const testSizeEl = formEl.querySelector('[data-act="testSize"]');
+    if (testSizeEl) testSizeEl.addEventListener('input', () => {
+      const v = parseFloat(testSizeEl.value);
+      if (!isNaN(v)) { state.testSize = v; renderCode(); }
+    });
+    const bindCheckbox = (sel, key) => {
+      const el = formEl.querySelector(sel);
+      if (!el) return;
+      el.addEventListener('change', () => { state[key] = el.checked; renderCode(); });
+    };
+    bindCheckbox('[data-act="hasCategorical"]', 'hasCategorical');
+    bindCheckbox('[data-act="stratify"]', 'stratify');
+    bindCheckbox('[data-act="crossval"]', 'crossval');
+    bindCheckbox('[data-act="earlyStop"]', 'earlyStop');
+    bindCheckbox('[data-act="tsDiagnostic"]', 'tsDiagnostic');
+    const tsAutoOrderEl = formEl.querySelector('[data-act="tsAutoOrder"]');
+    if (tsAutoOrderEl) tsAutoOrderEl.addEventListener('change', () => {
+      state.tsAutoOrder = tsAutoOrderEl.checked;
+      renderCode();
+    });
+    formEl.querySelectorAll('[data-act="metric"]').forEach(el => {
+      el.addEventListener('change', () => {
+        state.metrics[el.dataset.metric] = el.checked;
+        renderCode();
+      });
+    });
+  }
+
+  // ============================================================
+  //  Génération du code Python (panneau de droite)
+  // ============================================================
+  function checkedMetrics(){
+    return (METRICS[state.task] || []).filter(m => state.metrics[m.v]);
+  }
+
+  // Retourne {title, body} ou null si vide — la numérotation ("1 · ...", "2 · ...") est appliquée
+  // APRÈS filtrage des sections vides (cf. renderCode), pour rester continue même quand une étape
+  // est masquée par la config courante (ex: pas de "Entraîner" séparé si GridSearchCV a déjà fitté).
+  function section(title, body){
+    if (!body || !body.trim()) return null;
+    return {title, body: body.trim()};
+  }
+
+  function genHeader(){
+    const taskLabel = {regression:'Régression', classification:'Classification', clustering:'Clustering', dimreduction:'Réduction de dimension', timeseries:'Time Series'}[state.task];
+    return `# ============================================================\n#  WORKFLOW ${state.kind==='ml'?'MACHINE LEARNING':'DEEP LEARNING'}\n#  Tâche : ${taskLabel}${state.kind==='dl' ? ' — données ' + {tabular:'tabulaires', image:'images', sequence:'séquences'}[state.dlArch] : ''}\n# ============================================================\n`;
+  }
+
+  // Chaque fonction gen* écrit ses imports EN LIGNE, juste avant leur premier usage (style "cellule de
+  // notebook", cohérent avec le reste du mémo) — mais un script final se lit mieux avec tous les
+  // imports groupés en haut. Plutôt que de retoucher chaque fonction, on les extrait ici après coup :
+  // repère toute ligne `import ...`/`from ... import ...`, la sort du corps du texte, la déduplique,
+  // et renvoie le tout prêt à recomposer (imports groupés + corps nettoyé).
+  function extractImports(text){
+    const seen = new Set();
+    const imports = [];
+    const rest = text.split('\n').filter(line => {
+      const trimmed = line.trim();
+      if (/^(import\s+\S|from\s+\S+\s+import\s+)/.test(trimmed)){
+        if (!seen.has(trimmed)){ seen.add(trimmed); imports.push(trimmed); }
+        return false;
+      }
+      return true;
+    }).join('\n')
+      .replace(/\n{3,}/g, '\n\n'); // effondre les trous laissés par les imports retirés
+    return {imports, rest};
+  }
+
+  // Versions stables les plus récentes au 17/08/2026 (vérifiées sur PyPI) — à mettre à jour si le
+  // mémo est retouché plus tard, ces numéros deviennent obsolètes avec le temps comme toute version figée.
+  const PACKAGE_VERSIONS = {
+    pandas: {pkg:'pandas', version:'3.0.5'},
+    numpy: {pkg:'numpy', version:'2.5.2'},
+    sklearn: {pkg:'scikit-learn', version:'1.9.0'},
+    matplotlib: {pkg:'matplotlib', version:'3.11.1'},
+    keras: {pkg:'keras', version:'3.15.1'},
+    tensorflow: {pkg:'tensorflow', version:'2.21.0'},
+    statsmodels: {pkg:'statsmodels', version:'0.14.6'},
+    pmdarima: {pkg:'pmdarima', version:'2.1.1'},
+    prophet: {pkg:'prophet', version:'1.4.0'},
+    darts: {pkg:'darts', version:'0.46.1'},
+  };
+
+  // Construit le contenu d'un vrai requirements.txt (texte brut, plus de Python — vit dans son
+  // propre panneau à part, cf. #code-output-requirements/-usage) à partir des imports réellement
+  // utilisés dans le script — seuls les paquets tiers y figurent (pickle/math sont dans la
+  // bibliothèque standard, jamais listés).
+  function genRequirementsBlock(importLines){
+    const seen = new Set();
+    const pkgs = [];
+    importLines.forEach(line => {
+      const m = line.trim().match(/^(?:from|import)\s+([A-Za-z0-9_]+)/);
+      const info = m && PACKAGE_VERSIONS[m[1]];
+      if (info && !seen.has(info.pkg)){ seen.add(info.pkg); pkgs.push(info); }
+    });
+    if (!pkgs.length) return '# aucune dépendance tierce (bibliothèque standard uniquement)';
+    pkgs.sort((a, b) => a.pkg.localeCompare(b.pkg));
+    return pkgs.map(p => `${p.pkg}==${p.version}`).join('\n');
+  }
+
+  function genLoad(){
+    if (state.task === 'timeseries'){
+      return `# Charger la série temporelle, indexée par date\nimport pandas as pd\n\n# TODO : chemin du fichier + nom de la colonne date\ndf = pd.read_csv("data.csv", parse_dates=["date"], index_col="date")\n# TODO : une seule colonne "value" à prédire dans ce squelette — adapter le nom`;
+    }
+    if (state.kind === 'dl' && state.dlArch === 'image'){
+      return `import tensorflow as tf\n\n# Depuis un dossier organisé en sous-dossiers par classe (image_dataset_from_directory)\n# TODO : chemins des dossiers train/val + dimensions des images\ntrain_ds = tf.keras.utils.image_dataset_from_directory(\n    "data/train", image_size=(64, 64), batch_size=32,\n)\n# Même logique pour le jeu de validation\nval_ds = tf.keras.utils.image_dataset_from_directory(\n    "data/val", image_size=(64, 64), batch_size=32,\n)`;
+    }
+    if (state.kind === 'dl' && state.dlArch === 'sequence'){
+      return `# Charger les données brutes (série continue, avant fenêtrage)\nimport pandas as pd\nimport numpy as np\n\n# TODO : chemin du fichier\ndf = pd.read_csv("data.csv")\n# TODO : fenêtrage à faire ici — transformer la série en paires (séquence, cible)\n# cf. Syntaxes ▸ Fenêtrage — transformer une série en séquences\n# X.shape attendu : (n_séquences, n_observations, n_features)`;
+    }
+    // Charger seulement — Explorer/Nettoyer sont deux sections À PART (genExploreSection()/
+    // genCleanSection() ci-dessous), qui reprennent chacune une vraie étape numérotée de
+    // Workflow ML ▸ Data Preparation (cf. ml-lifecycle côté mémo, groupe Modélisation), au lieu
+    // d'être noyées ici avec le chargement.
+    return `# Charger le dataset\nimport pandas as pd\n\n# TODO : chemin du fichier\ndf = pd.read_csv("data.csv")`;
+  }
+
+  // ---------- Explorer (Workflow ML ▸ étape 1) — diagnostics purs, aucune mutation ----------
+  // Même triplet que le mémo (ml-lifecycle ▸ wf0-explorer) : NaN, doublons, équilibre des classes —
+  // sur df ENTIER (target encore dedans), avant toute séparation X/y ou nettoyage.
+  function genExploreSection(){
+    if (state.task === 'timeseries') return ''; // pas de notion de ligne/classe ici (cf. genTsFreqSection)
+    if (state.kind === 'dl' && state.dlArch !== 'tabular') return ''; // pas de dataframe tabulaire
+    let out = `# Valeurs manquantes, types de colonnes et doublons — à vérifier avant de choisir\n# un traitement (une date/un nombre stocké en texte apparaît en dtype object)\nprint(df.isnull().sum())\nprint(df.dtypes)\nprint(df.duplicated().sum())`;
+    if (state.task === 'classification'){
+      out += `\n\n# Équilibre des classes — informe le choix de stratify= au split (plus bas)\n# TODO : nom de la colonne target\nprint(df["target"].value_counts())`;
+    }
+    return out;
+  }
+
+  // ---------- Nettoyer (Workflow ML ▸ étape 2) — mutations SAFE avant le split (aucun .fit()) ----------
+  // Doublons (aucun cas où les garder est correct, donc suppression inconditionnelle) + outliers
+  // (PAS toujours une erreur, cf. avertissement ml-lifecycle ▸ wf0-nettoyer — donc pas de bornes
+  // devinées à l'avance, liste de colonnes # TODO comme pour les valeurs manquantes, cf. §6 doc).
+  // Termine par la séparation X/y : mécanique, pas une étape à part dans le workflow enseigné.
+  function genCleanSection(){
+    if (state.task === 'timeseries') return '';
+    if (state.kind === 'dl' && state.dlArch !== 'tabular') return '';
+    let out = `# Doublons — sans risque à supprimer (aucune info perdue)\ndf = df.drop_duplicates()\n\n`;
+    out += `# TODO : colonnes à examiner pour des outliers — PAS toujours une erreur (observation\n# rare, feature en soi...), à traiter au cas par cas plutôt qu'en systématique\ncols_outliers = []\nif cols_outliers:\n    print(df[cols_outliers].describe())\n    # TODO : ajuste les bornes ci-dessous une fois les stats ci-dessus inspectées\n    mask = df[cols_outliers].apply(\n        lambda s: s.between(s.quantile(0.01), s.quantile(0.99))\n    ).all(axis=1)\n    df = df[mask].reset_index(drop=True)\n\n`;
+    if (isUnsupervised()){
+      out += `# Pas de target (non supervisé) : on garde tout le dataframe comme features\nX = df.copy()`;
+    } else {
+      out += `# Séparer les features (X) de la target (y)\n# TODO : nom de la colonne target\nX = df.drop(columns=["target"])\ny = df["target"]`;
+    }
+    return out;
+  }
+
+  // ---------- Conversion de types (Workflow ML ▸ Preprocessing, tout début) — stateless (aucun
+  // .fit()), donc appliquée indépendamment à chaque frame (pas de distinction fit/apply comme pour
+  // l'imputation/le scaling ci-dessous). Placée APRÈS le split (cf. renderCode()) pour rester dans
+  // l'esprit "Explorer diagnostique, Preprocessing convertit" enseigné par ml-lifecycle — une date
+  // ou un nombre stocké en texte (dtype object) doit être converti AVANT le ColumnTransformer,
+  // sinon il finit dans la branche catégorielle (OneHotEncoder) au lieu d'être exploité comme une
+  // vraie date/un vrai nombre (cf. wf1-preprocessing/wf2-preprocessing côté mémo).
+  function genTypesSection(){
+    if (state.task === 'timeseries') return ''; // déjà indexée par date via parse_dates (genLoad) — pas de colonne texte à convertir ici
+    if (state.kind === 'dl' && state.dlArch !== 'tabular') return '';
+    const second = isUnsupervised() ? null : secondSplitFrame();
+    let out = `# TODO : colonnes date stockées en texte (dtype object) — décomposées en features\n# numériques, un modèle ne comprend pas un datetime brut\ncols_dates = []\n\n`;
+    out += `def expand_dates(df, cols):\n    for col in cols:\n        df[col] = pd.to_datetime(df[col])\n        df[col + "_year"] = df[col].dt.year\n        df[col + "_month"] = df[col].dt.month\n        df[col + "_dayofweek"] = df[col].dt.dayofweek\n        df = df.drop(columns=[col])\n    return df\n\n`;
+    if (second){
+      out += `if cols_dates:\n    X_train = expand_dates(X_train, cols_dates)\n    ${second.X} = expand_dates(${second.X}, cols_dates)\n\n`;
+    } else {
+      out += `if cols_dates:\n    X = expand_dates(X, cols_dates)\n\n`;
+    }
+    out += `# TODO : colonnes numériques écrites en texte (ex: "1 200", "3,5") — converties sans\n# planter sur ce qui ne parse pas (deviennent NaN, traité ensuite comme valeur manquante)\ncols_text_numbers = []\n`;
+    if (second){
+      out += `if cols_text_numbers:\n    X_train[cols_text_numbers] = X_train[cols_text_numbers].apply(\n        lambda s: pd.to_numeric(s.str.replace(",", "."), errors="coerce")\n    )\n    ${second.X}[cols_text_numbers] = ${second.X}[cols_text_numbers].apply(\n        lambda s: pd.to_numeric(s.str.replace(",", "."), errors="coerce")\n    )`;
+    } else {
+      out += `if cols_text_numbers:\n    X[cols_text_numbers] = X[cols_text_numbers].apply(\n        lambda s: pd.to_numeric(s.str.replace(",", "."), errors="coerce")\n    )`;
+    }
+    return out;
+  }
+
+  // Bloc "valeurs manquantes" partagé par toutes les tâches (ML/DL tabulaire ET Time Series, cf.
+  // genTsMissingSection()) — même logique de préparation des colonnes partout : ne rien présumer, tester via
+  // une vraie commande (isna().sum()), puis traiter PAR COLONNE (jamais une stratégie globale
+  // unique). `fitFrame` : variable sur laquelle les stats (moyenne/médiane) sont CALCULÉES ('X_train'
+  // en ML/DL split, 'train' en Time Series, 'X' si pas de split — clustering/dimreduction).
+  // `applyFrame` (optionnel) : second frame ('X_test'/'X_val'/'test') qui reçoit les MÊMES stats via
+  // fillna, jamais recalculées dessus — sinon la distribution de test fuiterait dans l'imputation du
+  // train (cf. Workflow ML ▸ Séparer train/test, "le split doit précéder le fit du scaler/encoder").
+  // `dropTargetFit`/`dropTargetApply` : variable target à aligner sur le même masque de lignes que
+  // son frame lors d'un dropna (safe par frame — contrairement à mean/median, dropna n'utilise
+  // aucune statistique partagée entre train et test).
+  function genMissingValuesPrep(fitFrame, applyFrame, dropTargetFit, dropTargetApply){
+    const out = [];
+    out.push(`# Combien de valeurs manquantes, et dans quelles colonnes ?\n# À vérifier avant de choisir un traitement\nprint(${fitFrame}.isna().sum())`);
+
+    const fitDropAssign = dropTargetFit ? `${fitFrame}, ${dropTargetFit} = ${fitFrame}[mask], ${dropTargetFit}[mask]` : `${fitFrame} = ${fitFrame}[mask]`;
+    let dropBlock = `# TODO : colonnes où il vaut mieux supprimer les lignes que les imputer\n# (peu de lignes concernées, valeur manquante = erreur de collecte)\ncols_dropna = []\nif cols_dropna:\n    mask = ${fitFrame}[cols_dropna].notna().all(axis=1)\n    ${fitDropAssign}`;
+    if (applyFrame){
+      const applyDropAssign = dropTargetApply ? `${applyFrame}, ${dropTargetApply} = ${applyFrame}[mask], ${dropTargetApply}[mask]` : `${applyFrame} = ${applyFrame}[mask]`;
+      dropBlock += `\n    mask = ${applyFrame}[cols_dropna].notna().all(axis=1)\n    ${applyDropAssign}`;
+    }
+    out.push(dropBlock);
+
+    [['mean', "la moyenne (distribution ~symétrique, peu d'outliers)"], ['median', 'la médiane (distribution asymétrique / outliers)']].forEach(([strategy, label]) => {
+      let block = `# TODO : colonnes à imputer par ${label}\ncols_impute_${strategy} = []\nif cols_impute_${strategy}:\n`;
+      if (applyFrame){
+        block += `    ${strategy}_vals = ${fitFrame}[cols_impute_${strategy}].${strategy}()\n`;
+        block += `    ${fitFrame}[cols_impute_${strategy}] = ${fitFrame}[cols_impute_${strategy}].fillna(${strategy}_vals)\n`;
+        block += `    ${applyFrame}[cols_impute_${strategy}] = ${applyFrame}[cols_impute_${strategy}].fillna(${strategy}_vals)`;
+      } else {
+        block += `    ${fitFrame}[cols_impute_${strategy}] = ${fitFrame}[cols_impute_${strategy}].fillna(${fitFrame}[cols_impute_${strategy}].${strategy}())`;
+      }
+      out.push(block);
+    });
+    return out.join('\n\n');
+  }
+
+  // Bloc "encodage catégoriel + scaling" partagé par toutes les tâches tabulaires (ML/DL ET Time
+  // Series exogène, cf. genTsCatScalingSection()) — même traitement PAR TYPE DE COLONNE partout. `sourceExpr` :
+  // expression Python sur laquelle scaler/preprocessor sont FIT (`X_train` en ML/DL, `train[exog_cols]`
+  // en Time Series). `assignExpr` : variable où stocker le résultat correspondant (overwrite direct).
+  // `applySourceExpr`/`applyAssignExpr` (optionnels) : second frame (`X_test`/`X_val`/`test[exog_cols]`)
+  // — reçoit un `.transform()` avec le MÊME scaler/preprocessor déjà fit sur `sourceExpr`, jamais
+  // refit dessus (sinon la distribution de test fuiterait dans le prétraitement du train, cf.
+  // Workflow ML ▸ Séparer train/test).
+  function genCatScalingPrep(sourceExpr, assignExpr, applySourceExpr, applyAssignExpr){
+    const scalers = {standard:'StandardScaler', minmax:'MinMaxScaler', robust:'RobustScaler'};
+    const scalerCls = scalers[state.scaling];
+    const out = [];
+
+    if (!state.hasCategorical){
+      // Que du numérique — pas besoin de ColumnTransformer, scaler appliqué directement
+      // (valeurs manquantes déjà traitées ci-dessus, par colonne).
+      if (scalerCls){
+        let block = `# Mettre les features numériques à l'échelle\n# TODO : ça scale TOUTES les colonnes de ${sourceExpr} — si certaines ne doivent pas\n# l'être (ex: indicateur binaire déjà 0/1), les exclure avant et les recoller après\nfrom sklearn.preprocessing import ${scalerCls}\nscaler = ${scalerCls}()\n${assignExpr} = pd.DataFrame(scaler.fit_transform(${sourceExpr}), columns=${sourceExpr}.columns)`;
+        if (applySourceExpr){
+          block += `\n${applyAssignExpr} = pd.DataFrame(scaler.transform(${applySourceExpr}), columns=${applySourceExpr}.columns)`;
+        }
+        out.push(block);
+      }
+      return out.join('\n\n');
+    }
+
+    // Colonnes numériques ET catégorielles présentes : ColumnTransformer applique à CHAQUE type le
+    // traitement adapté automatiquement (sélection par dtype pour le numérique ET pour les
+    // nominales), plutôt qu'un choix unique pour tout. Seules les ordinales sont déclarées à la
+    // main (impossible à distinguer des nominales par dtype seul) — les nominales s'en déduisent
+    // automatiquement (dtype object, moins les ordinales), pas de liste à remplir deux fois.
+    // Les valeurs manquantes numériques, s'il y en a, sont déjà traitées ci-dessus (par colonne) —
+    // le pipeline numérique n'a donc plus besoin d'imputer, juste du scaler.
+    const skPreprocessing = [];
+    if (scalerCls) skPreprocessing.push(scalerCls);
+    skPreprocessing.push('OneHotEncoder', 'OrdinalEncoder');
+
+    let block = `from sklearn.compose import ColumnTransformer, make_column_selector\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.impute import SimpleImputer\n`;
+    if (skPreprocessing.length) block += `from sklearn.preprocessing import ${skPreprocessing.join(', ')}\n`;
+    block += `\n`;
+
+    let numTransformer;
+    if (scalerCls){
+      // Pipeline appliqué aux colonnes numériques (sélectionnées automatiquement par dtype)
+      block += `# TODO : make_column_selector prend TOUTES les colonnes numériques — si certaines\n# ne doivent pas être scalées (ex: indicateur binaire déjà 0/1), remplace le selector\n# par une liste explicite de colonnes, ou scinde-les dans une branche à part\n`;
+      block += `numeric_pipe = Pipeline([\n    ("scaler", ${scalerCls}()),\n])\n\n`;
+      numTransformer = `("num", numeric_pipe, make_column_selector(dtype_include="number"))`;
+    } else {
+      numTransformer = `("num", "passthrough", make_column_selector(dtype_include="number"))`;
+    }
+    const transformers = [numTransformer];
+
+    // Colonnes ordinales : un dictionnaire {nom de colonne: ordre des catégories} plutôt qu'une
+    // liste de listes anonyme — plus lisible à compléter, et cat_cols_ordinal/OrdinalEncoder(categories=...)
+    // s'en déduisent directement (list(dict.keys())/list(dict.values()), dans le même ordre).
+    const ordinalOrderSnippet = `# TODO : une entrée par colonne catégorielle ordinale — nom de colonne + ordre des\n# catégories (du plus petit au plus grand)\nordinal_order = {\n    "colonne_1": ["low", "medium", "high"],\n}\ncat_cols_ordinal = list(ordinal_order.keys())\n\n`;
+
+    // Colonnes catégorielles AVEC un ordre naturel, et leur ordre (du plus petit au plus grand)
+    block += ordinalOrderSnippet;
+    // Colonnes catégorielles SANS ordre naturel (ex: couleur, pays) — dérivées automatiquement de
+    // TOUTES les colonnes object, moins celles déjà classées comme ordinales ci-dessus (pas de TODO :
+    // pas besoin de lister les colonnes catégorielles une seconde fois, cat_cols_ordinal suffit).
+    block += `cat_cols_nominal = [\n    c for c in make_column_selector(dtype_include="object")(${sourceExpr}) if c not in cat_cols_ordinal\n]\n\n`;
+    // L'imputer (most_frequent) est un no-op si la colonne n'a pas de valeur manquante — pas besoin
+    // de savoir à l'avance s'il y en a, il est donc toujours présent (mêmes raisons que ci-dessus).
+    const nomSteps = [`("imputer", SimpleImputer(strategy="most_frequent"))`, `("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False))`];
+    // Pipeline pour les colonnes nominales (pas de scaler : standardiser un 0/1 n'a pas de sens)
+    block += `nominal_pipe = Pipeline([\n    ${nomSteps.join(',\n    ')},\n])\n`;
+    const ordSteps = [`("imputer", SimpleImputer(strategy="most_frequent"))`];
+    ordSteps.push(`("encoder", OrdinalEncoder(categories=list(ordinal_order.values())))`);
+    if (scalerCls) ordSteps.push(`("scaler", ${scalerCls}())`);
+    // Pipeline pour les colonnes ordinales — scaler APRÈS l'encodage : l'OrdinalEncoder produit des
+    // entiers représentant un ordre réel, sur une échelle arbitraire à harmoniser avec le numérique
+    block += `ordinal_pipe = Pipeline([\n    ${ordSteps.join(',\n    ')},\n])\n\n`;
+    transformers.push(`("cat_nominal", nominal_pipe, cat_cols_nominal)`);
+    transformers.push(`("cat_ordinal", ordinal_pipe, cat_cols_ordinal)`);
+
+    // Appliquer à chaque groupe de colonnes son propre traitement, en une seule transformation
+    // remainder="passthrough" : sans lui, toute colonne non sélectionnée par aucun des transformers
+    // ci-dessus (ni numérique, ni catégorielle) est SUPPRIMÉE par défaut (cf. Workflow ML ▸
+    // Preprocessing avec pipeline, avertissement équivalent).
+    block += `preprocessor = ColumnTransformer([\n    ${transformers.join(',\n    ')},\n], remainder="passthrough")\n\n${assignExpr} = preprocessor.fit_transform(${sourceExpr})`;
+    if (applySourceExpr){
+      block += `\n${applyAssignExpr} = preprocessor.transform(${applySourceExpr})`;
+    }
+    out.push(block);
+    return out.join('\n\n');
+  }
+
+  // Trois sections DISTINCTES dans le script généré (cf. renderCode()) — fréquence de la série
+  // (Time Series uniquement) en premier, puis valeurs manquantes, puis encodage catégoriel/scaling,
+  // plutôt qu'un seul bloc "Préparation des données" mélangeant tout. Mêmes fonctions partagées
+  // (genMissingValuesPrep/genCatScalingPrep) que le Time Series (genTsMissingSection/
+  // genTsCatScalingSection ci-dessous, cf. §8 de doc-implementation/generator-code.md).
+  function genFreqSection(){
+    if (state.task !== 'timeseries') return ''; // fréquence de série : concept propre au Time Series
+    return genTsFreqSection();
+  }
+
+  // Second frame produit par genSplit() une fois le split fait — DL nomme train/validation,
+  // ML/DL non-DL nomme train/test — réutilisé pour appliquer les stats/le preprocessor fit sur le
+  // SEUL frame d'entraînement au second frame (jamais refit dessus, cf. genMissingValuesPrep/
+  // genCatScalingPrep ci-dessus).
+  function secondSplitFrame(){
+    return state.kind === 'dl' ? {X:'X_val', y:'y_val'} : {X:'X_test', y:'y_test'};
+  }
+
+  function genMissingSection(){
+    if (state.task === 'timeseries') return genTsMissingSection();
+    if (state.kind === 'dl' && state.dlArch !== 'tabular') return ''; // géré dans genLoad/genModel
+    // Ne pas présumer qu'il y a (ou pas) des valeurs manquantes — le vérifier via une vraie commande
+    // plutôt que de deviner. Chaque colonne peut ensuite avoir une raison différente d'en avoir
+    // (erreur de collecte, donnée non applicable, catégorie "absente" en soi...) : le traitement se
+    // choisit donc PAR COLONNE (supprimer les lignes / imputer par la moyenne / par la médiane),
+    // jamais une seule stratégie globale appliquée d'un bloc à tout X. Listes vides = no-op à
+    // l'exécution, donc toujours généré, pas besoin de le déclarer à l'avance dans le formulaire.
+    // Exécuté APRÈS le split (cf. renderCode()) : stats calculées sur X_train uniquement, jamais
+    // recalculées sur X_test/X_val — sinon la distribution de test fuiterait dans l'imputation.
+    if (isUnsupervised()) return genMissingValuesPrep('X', null, null, null);
+    const second = secondSplitFrame();
+    return genMissingValuesPrep('X_train', second.X, 'y_train', second.y);
+  }
+
+  function genCatScalingSection(){
+    if (state.task === 'timeseries') return genTsCatScalingSection();
+    if (state.kind === 'dl' && state.dlArch !== 'tabular') return '';
+    if (isUnsupervised()) return genCatScalingPrep('X', 'X');
+    const second = secondSplitFrame();
+    return genCatScalingPrep('X_train', 'X_train', second.X, second.X);
+  }
+
+  // ============================================================
+  //  Time Series — pipeline à part entière (rien à voir avec le flux tabulaire/classification/régression
+  //  ci-dessus : split contigu, ARIMA/SARIMA/Prophet/darts, pas de train_test_split ni de ColumnTransformer)
+  // ============================================================
+  function tsIsAuto(){
+    return (state.tsModel === 'arima' || state.tsModel === 'sarima') && state.tsAutoOrder;
+  }
+
+  function genTsFreqSection(){
+    // Combler les dates manquantes dans l'index (fréquence régulière requise) — AVANT tout le
+    // reste, split inclus : sinon les nouvelles dates comblées ici arriveraient après coup,
+    // désalignées avec le split/les valeurs manquantes/colonnes exogènes traités dans les sections
+    // suivantes.
+    return `full_range = pd.date_range(df.index.min(), df.index.max(), freq="${state.tsFreq}")\ndf = df.reindex(full_range)`;
+  }
+
+  function genTsMissingSection(){
+    // Même préparation des valeurs manquantes que ML/DL, exécutée APRÈS le split (cf. genTsSplit()
+    // dans renderCode()) : stats calculées sur train, appliquées telles quelles à test — jamais
+    // recalculées dessus (même principe que ML/DL, cf. genMissingValuesPrep ci-dessus).
+    let out = genMissingValuesPrep('train', 'test', null, null);
+    // "value" elle-même est mieux interpolée que moyennée/médianée (ordre temporel), donc traitée à
+    // part plutôt que via cols_impute_mean/median (qui s'appliquent aux colonnes exogènes) — chaque
+    // partie interpolée séparément (jamais avant le split : un point de test ne doit pas influencer
+    // l'interpolation du train, ni l'inverse).
+    out += `\n\n# Interpoler "value" (mieux adapté qu'une moyenne/médiane pour une série ordonnée dans le\n# temps) — séparément sur train et test, jamais avant le split\ntrain["value"] = train["value"].interpolate("linear")\ntest["value"] = test["value"].interpolate("linear")`;
+    if (state.tsDiagnostic){
+      out += `\n\n# ---- Diagnostic (décomposition + stationnarité, sur le train uniquement) ----\nfrom statsmodels.tsa.seasonal import seasonal_decompose\nfrom statsmodels.tsa.stattools import adfuller\nfrom statsmodels.graphics.tsaplots import plot_acf, plot_pacf\nimport matplotlib.pyplot as plt\n\nseasonal_decompose(train["value"], model="additive").plot()\nplt.show()\n\np_value = adfuller(train["value"])[1]\nstationnaire = "stationnaire" if p_value < 0.05 else "NON stationnaire (differencier)"\nprint("ADF p-value :", p_value, "—", stationnaire)\n\nplot_acf(train["value"], lags=50)\nplot_pacf(train["value"], lags=50, c="r")\nplt.show()`;
+    }
+    return out;
+  }
+
+  function genTsCatScalingSection(){
+    // Colonnes exogènes éventuelles (en plus de "value") — même traitement par type de colonne que
+    // le reste du mémo ; vide (les TODO ci-dessous restent inutiles) pour une série univariée. train/
+    // test déjà nettoyés à ce stade (cf. genTsMissingSection(), qui s'exécute avant) — le
+    // preprocessor est fit sur train[exog_cols] uniquement, puis seulement transform sur
+    // test[exog_cols] (même principe que ML/DL, cf. genCatScalingPrep ci-dessus).
+    let out = `# TODO : colonnes exogènes en plus de "value", si le modèle en utilise\n# (ex. SARIMAX(exog=...), Prophet.add_regressor)\nexog_cols = train.columns.drop("value")\n`;
+    const catScaling = genCatScalingPrep('train[exog_cols]', 'exog_train', 'test[exog_cols]', 'exog_test');
+    if (catScaling) out += `\n${catScaling}`;
+    return out;
+  }
+
+  function genTsSplit(){
+    if (state.tsModel === 'darts') return ''; // darts découpe sa propre TimeSeries dans genTsModel()
+    const trainSize = (1 - state.testSize).toFixed(2);
+    return `# Split CONTIGU (jamais de shuffle) — sinon fuite de données temporelle\ntrain_size = ${trainSize}\nindex = round(train_size * len(df))\ntrain, test = df.iloc[:index], df.iloc[index:]`;
+  }
+
+  function genTsBaseline(){
+    if (state.tsModel === 'darts') return '';
+    return `# Baseline — prédire la dernière valeur connue (persistence)\ny_pred_baseline = test["value"].shift(1)\ny_pred_baseline.iloc[0] = train["value"].iloc[-1]`;
+  }
+
+  function genTsModel(){
+    if (state.tsModel === 'prophet'){
+      // Prophet attend des colonnes nommées "ds" (date) et "y" (valeur)
+      return `from prophet import Prophet\n\ntrain_prophet = train.reset_index().rename(columns={"date": "ds", "value": "y"})\nmodel = Prophet()`;
+    }
+    if (state.tsModel === 'darts'){
+      // darts a son propre objet TimeSeries et son propre split (contigu lui aussi)
+      return `from darts import TimeSeries\nfrom darts.models import AutoARIMA\n\nseries = TimeSeries.from_dataframe(df.reset_index(), "date", "value")\ntrain_ts, test_ts = series.split_before(${(1 - state.testSize).toFixed(2)})\n\nmodel = AutoARIMA()`;
+    }
+    if (tsIsAuto()) return ''; // le modèle EST la recherche auto_arima — cf. genTsTuning()
+    if (state.tsModel === 'sarima'){
+      return `from statsmodels.tsa.statespace.sarimax import SARIMAX\n\n# TODO : ordre (p,d,q) et ordre saisonnier (P,D,Q,S) à ajuster selon les graphes ACF/PACF ci-dessus\nmodel = SARIMAX(train["value"], order=(1, 1, 1), seasonal_order=(1, 0, 1, ${state.tsSeasonalPeriod}))`;
+    }
+    return `from statsmodels.tsa.arima.model import ARIMA\n\n# TODO : ordre (p,d,q) à ajuster selon les graphes ACF/PACF ci-dessus\nmodel = ARIMA(train["value"], order=(2, 1, 1))`;
+  }
+
+  function genTsTuning(){
+    if (!tsIsAuto()) return '';
+    const seasonalArgs = state.tsModel === 'sarima'
+      ? `seasonal=True, m=${state.tsSeasonalPeriod}, start_p=0, max_p=2, start_P=0, max_P=2`
+      : `seasonal=False, start_p=1, max_p=3, start_q=1, max_q=3`;
+    // Cherche automatiquement (p,d,q)[,(P,D,Q,S)] par grid search sur l'AIC
+    return `import pmdarima as pm\nmodel = pm.auto_arima(\n    train["value"], ${seasonalArgs},\n    trace=True,\n)`;
+  }
+
+  function genTsTrain(){
+    if (state.tsModel === 'prophet') return `model.fit(train_prophet)`;
+    if (state.tsModel === 'darts') return `model.fit(train_ts)`;
+    if (tsIsAuto()) return ''; // auto_arima renvoie déjà un modèle FITTÉ
+    return `model = model.fit()`;
+  }
+
+  function genTsEval(){
+    const ms = checkedMetrics();
+    if (state.tsModel === 'darts'){
+      // Prédire sur toute la durée du jeu de test
+      let out = `preds = model.predict(len(test_ts))`;
+      if (ms.length){
+        out += `\n\nfrom darts.metrics import ${ms.map(m=>m.v).join(', ')}`;
+        ms.forEach(m => { out += `\nprint("${m.label} :", ${m.v}(test_ts, preds))`; });
+      }
+      return out;
+    }
+    // Prédire sur la période du jeu de test
+    let out;
+    if (state.tsModel === 'prophet'){
+      out = `future = model.make_future_dataframe(periods=len(test), freq="${state.tsFreq}")\nforecast = model.predict(future)\ny_pred = forecast["yhat"].iloc[-len(test):].values`;
+    } else if (tsIsAuto()){
+      out = `y_pred, conf_int = model.predict(n_periods=len(test), return_conf_int=True)`;
+    } else {
+      out = `forecast = model.get_forecast(steps=len(test))\ny_pred = forecast.predicted_mean`;
+    }
+    if (ms.length){
+      const skNames = {mae:'mean_absolute_error', rmse:'mean_squared_error', mape:'mean_absolute_percentage_error'};
+      const imports = [...new Set(ms.map(m => skNames[m.v]))];
+      out += `\n\nfrom sklearn.metrics import ${imports.join(', ')}`;
+      ms.forEach(m => {
+        if (m.v === 'rmse') out += `\nimport math\nprint("RMSE :", math.sqrt(mean_squared_error(test["value"], y_pred)))`;
+        else out += `\nprint("${m.label} :", ${skNames[m.v]}(test["value"], y_pred))`;
+      });
+    }
+    return out;
+  }
+
+  function genTsViz(){
+    // Comparer train, test réel et prédiction sur le même graphe
+    if (state.tsModel === 'darts'){
+      return `import matplotlib.pyplot as plt\n\ntrain_ts.plot(label="train")\ntest_ts.plot(label="test (réel)")\npreds.plot(label="prédiction")\nplt.legend()\nplt.title("Prévision")\nplt.show()`;
+    }
+    return `import matplotlib.pyplot as plt\n\nplt.plot(train.index, train["value"], label="train")\nplt.plot(test.index, test["value"], label="test (réel)")\nplt.plot(test.index, y_pred, label="prédiction")\nplt.legend()\nplt.title("Prévision")\nplt.show()`;
+  }
+
+  function genSplit(){
+    if (state.task === 'timeseries') return genTsSplit();
+    if (isUnsupervised()) return '';
+    if (state.kind === 'dl' && state.dlArch === 'image') return '';
+    const a = state.kind === 'dl' ? 'X_train, X_val, y_train, y_val' : 'X_train, X_test, y_train, y_test';
+    const stratifyArg = (state.task === 'classification' && state.stratify) ? ', stratify=y' : '';
+    // Split aléatoire (shuffle par défaut) — OK ici car les observations sont indépendantes
+    return `from sklearn.model_selection import train_test_split\n${a} = train_test_split(\n    X, y, test_size=${state.testSize}, random_state=42${stratifyArg}\n)`;
+  }
+
+  function genBaseline(){
+    if (state.task === 'timeseries') return genTsBaseline();
+    if (state.kind !== 'ml' || isUnsupervised()) return '';
+    const cls = state.task === 'regression' ? 'DummyRegressor' : 'DummyClassifier';
+    const strat = state.task === 'regression' ? 'strategy="mean"' : 'strategy="most_frequent"';
+    // Baseline naïve — le modèle final doit faire mieux que ça pour être utile
+    return `from sklearn.dummy import ${cls}\nbaseline = ${cls}(${strat})\nbaseline.fit(X_train, y_train)\nprint("Score baseline :", baseline.score(X_test, y_test))`;
+  }
+
+  function dlLossOptions(){
+    if (state.task === 'regression') return [
+      {v:'mse', label:'MSE — Mean Squared Error'},
+      {v:'mae', label:'MAE — Mean Absolute Error'},
+      {v:'huber', label:'Huber — robuste aux outliers'},
+    ];
+    if (state.numClasses > 2) return [
+      {v:'sparse_categorical_crossentropy', label:'Sparse Categorical Crossentropy (labels entiers)'},
+      {v:'categorical_crossentropy', label:'Categorical Crossentropy (labels one-hot)'},
+    ];
+    return [
+      {v:'binary_crossentropy', label:'Binary Crossentropy'},
+      {v:'BinaryFocalCrossentropy', label:'Focal Loss — classes déséquilibrées'},
+    ];
+  }
+  function resetDlLoss(){
+    const opts = dlLossOptions();
+    if (!opts.find(o => o.v === state.dlLoss)) state.dlLoss = opts[0].v;
+  }
+
+  function dlOutputSpec(){
+    resetDlLoss();
+    const loss = state.dlLoss;
+    if (state.task === 'regression') return {units:1, activation:'linear', loss};
+    if (state.numClasses > 2) return {units:state.numClasses, activation:'softmax', loss};
+    return {units:1, activation:'sigmoid', loss};
+  }
+
+  function genModel(){
+    if (state.task === 'timeseries') return genTsModel();
+    if (state.kind === 'ml'){
+      const def = currentModelDef();
+      // Instancier le modèle
+      let code = def.code;
+      if (def.criterionOptions){
+        resetMlCriterion();
+        const opt = def.criterionOptions.find(o => o.v === state.mlCriterion);
+        code = code.replace('{{criterion}}', `criterion="${state.mlCriterion}", `).replace('{{criterionNote}}', opt.note);
+      }
+      return `${def.imp}\n${code}`;
+    }
+    // Deep Learning — construire l'architecture (couches empilées)
+    const out = dlOutputSpec();
+    let layersCode;
+    if (state.dlArch === 'image'){
+      layersCode = `# TODO : adapter la shape d'entrée (hauteur, largeur, canaux) à tes images\n    layers.Input(shape=(64, 64, 3)),\n    layers.Rescaling(1./255),\n    layers.Conv2D(32, (3, 3), activation="relu"),\n    layers.MaxPooling2D((2, 2)),\n    layers.Conv2D(64, (3, 3), activation="relu"),\n    layers.MaxPooling2D((2, 2)),\n    layers.Flatten(),\n    layers.Dense(64, activation="relu"),\n    layers.Dense(${out.units}, activation="${out.activation}"),`;
+    } else if (state.dlArch === 'sequence'){
+      layersCode = `# TODO : adapter la shape d'entrée (longueur de séquence, nb de features)\n    layers.Input(shape=(n_observations, n_features)),\n    layers.LSTM(64, activation="tanh"),\n    layers.Dense(${out.units}, activation="${out.activation}"),`;
+    } else {
+      layersCode = `layers.Input(shape=(X_train.shape[1],)),\n    layers.Dense(64, activation="relu"),\n    layers.Dense(64, activation="relu"),\n    layers.Dense(${out.units}, activation="${out.activation}"),`;
+    }
+    return `from keras import Sequential, layers\n\nmodel = Sequential([\n    ${layersCode}\n])`;
+  }
+
+  function genCompile(){
+    if (state.kind !== 'dl') return '';
+    const out = dlOutputSpec();
+    const metricList = checkedMetrics().filter(m => m.dl).map(m => `"${m.dl}"`);
+    const skipped = checkedMetrics().filter(m => !m.dl);
+    if (!metricList.length) metricList.push(state.task === 'regression' ? '"mae"' : '"accuracy"');
+    const note = skipped.length ? `\n# ${skipped.map(m=>m.label).join(', ')} : pas de métrique Keras native\n# calculer après coup sur y_val/model.predict(), cf. étape Évaluer` : '';
+    const oneHotNote = out.loss === 'categorical_crossentropy'
+      ? `\n# "categorical_crossentropy" attend des labels one-hot :\n# from keras.utils import to_categorical\n# y_train, y_val = to_categorical(y_train), to_categorical(y_val)`
+      : '';
+    // Configurer la loss, l'optimiseur et les métriques suivies pendant l'entraînement
+    return `model.compile(\n    loss="${out.loss}",\n    optimizer="adam",\n    metrics=[${metricList.join(', ')}],\n)${oneHotNote}${note}`;
+  }
+
+  function genTuning(){
+    if (state.task === 'timeseries') return genTsTuning();
+    if (state.kind !== 'ml' || state.tuning === 'none') return '';
+    const def = currentModelDef();
+    if (!def.grid) return '';
+    const cls = state.tuning === 'gridsearch' ? 'GridSearchCV' : 'RandomizedSearchCV';
+    const extra = state.tuning === 'randomsearch' ? ', n_iter=30' : '';
+    const primary = checkedMetrics()[0];
+    const scoring = state.task === 'clustering' ? null : (primary ? primary.v : (state.task==='regression'?'r2':'accuracy'));
+    // Chercher les meilleurs hyperparamètres par validation croisée (cv=5), puis garder le meilleur modèle
+    return `from sklearn.model_selection import ${cls}\nparam_grid = ${def.grid}\nsearch = ${cls}(model, param_grid, cv=5${scoring?`, scoring="${scoring}"`:''}${extra}, n_jobs=-1)\nsearch.fit(X_train, y_train)\nmodel = search.best_estimator_\nprint("Meilleurs hyperparamètres :", search.best_params_)`;
+  }
+
+  function genTrain(){
+    if (state.task === 'timeseries') return genTsTrain();
+    if (state.kind === 'ml'){
+      // Entraîner le modèle (non supervisé : pas de target)
+      if (state.task === 'clustering') return `model.fit(X)`;
+      // fit_transform combine entraînement et projection — X_reduced sert ensuite en Évaluer/Visualisation
+      if (state.task === 'dimreduction') return `X_reduced = model.fit_transform(X)`;
+      if (state.tuning !== 'none' && currentModelDef().grid) return ''; // déjà fitté par la recherche d'hyperparamètres
+      return `model.fit(X_train, y_train)`;
+    }
+    // DL
+    let cbLines = [];
+    if (state.earlyStop) cbLines.push('es');
+    const cbSetup = state.earlyStop
+      // Arrêter l'entraînement dès que la loss de validation ne s'améliore plus (évite le sur-apprentissage)
+      ? `from keras.callbacks import EarlyStopping\nes = EarlyStopping(monitor="val_loss", patience=10, restore_best_weights=True)\n\n`
+      : '';
+    const dataArgs = state.dlArch === 'image'
+      ? `train_ds,\n    validation_data=val_ds,`
+      : `X_train, y_train,\n    validation_data=(X_val, y_val),`;
+    // Entraîner sur les epochs, en suivant la loss de validation
+    return `${cbSetup}history = model.fit(\n    ${dataArgs}\n    epochs=100,\n    batch_size=32,${cbLines.length ? `\n    callbacks=[${cbLines.join(', ')}],` : ''}\n)`;
+  }
+
+  function genEval(){
+    if (state.task === 'timeseries') return genTsEval();
+    if (state.kind === 'ml'){
+      if (state.task === 'clustering'){
+        // Inertia : somme des distances au carré aux centroïdes (plus bas = clusters plus compacts)
+        let out = `print("Inertia :", model.inertia_)`;
+        if (state.metrics.silhouette){
+          out += `\n\nfrom sklearn.metrics import silhouette_score\nprint("Silhouette Score :", silhouette_score(X, model.labels_))`;
+        }
+        return out;
+      }
+      if (state.task === 'dimreduction'){
+        // Variance expliquée : combien d'information chaque composante capture (sert à choisir k)
+        return `print("Variance expliquée par composante :", model.explained_variance_ratio_)\nprint("Variance expliquée cumulée :", model.explained_variance_ratio_.cumsum())`;
+      }
+      const ms = checkedMetrics();
+      // Prédire sur le jeu de test, puis calculer les métriques choisies
+      if (!ms.length) return `y_pred = model.predict(X_test)`;
+      const rmse = ms.find(m => m.v === 'rmse');
+      const skMetrics = ms.filter(m => m.sk);
+      const imp = skMetrics.length ? `from sklearn.metrics import ${skMetrics.map(m=>m.sk).join(', ')}\n` : '';
+      let out = `${imp}y_pred = model.predict(X_test)\n`;
+      skMetrics.forEach(m => {
+        const call = (m.v === 'precision' || m.v === 'recall' || m.v === 'f1')
+          ? `${m.sk}(y_test, y_pred, average="binary" if len(set(y_test)) == 2 else "macro")`
+          : (m.v === 'roc_auc' ? `${m.sk}(y_test, model.predict_proba(X_test)[:, 1])` : `${m.sk}(y_test, y_pred)`);
+        out += `print("${m.label} :", ${call})\n`;
+      });
+      if (rmse){
+        out += `import math\nfrom sklearn.metrics import mean_squared_error\nprint("RMSE :", math.sqrt(mean_squared_error(y_test, y_pred)))\n`;
+      }
+      let cv = '';
+      if (state.crossval){
+        const primary = ms[0];
+        // Vérifier que le score n'est pas dû au hasard du split (moyenne sur 5 folds)
+        cv = `\nfrom sklearn.model_selection import cross_validate\ncv_results = cross_validate(model, X_train, y_train, cv=5, scoring="${primary.v}")\nprint("Score CV moyen (${primary.label}) :", cv_results["test_score"].mean())`;
+      }
+      return out.trim() + cv;
+    }
+    // DL — évaluer sur le jeu de validation
+    const dataArgs = state.dlArch === 'image' ? 'val_ds' : 'X_val, y_val';
+    return `model.evaluate(${dataArgs})`;
+  }
+
+  function genViz(){
+    if (state.task === 'timeseries') return genTsViz();
+    if (state.kind === 'dl'){
+      // Courbes d'apprentissage : train vs validation (un écart qui grandit = sur-apprentissage)
+      let out = `import matplotlib.pyplot as plt\n\nplt.plot(history.history["loss"], label="train")\nplt.plot(history.history["val_loss"], label="val")\nplt.xlabel("Epoch")\nplt.ylabel("Loss")\nplt.legend()\nplt.title("Courbes d'apprentissage")\nplt.show()`;
+      if (state.task === 'classification'){
+        const predToLabels = state.numClasses > 2
+          ? 'np.argmax(model.predict(X_val), axis=1)'
+          : '(model.predict(X_val) > 0.5).astype(int)';
+        if (state.dlArch === 'image'){
+          // val_ds ne donne pas directement un array y_val/X_val exploitable par sklearn — il faut
+          // dérouler le générateur pour récupérer les vraies étiquettes avant de tracer la matrice.
+          out += `\n\nimport numpy as np\nfrom sklearn.metrics import ConfusionMatrixDisplay\ny_val = np.concatenate([y for _, y in val_ds], axis=0)\ny_pred = ${state.numClasses > 2 ? 'np.argmax(model.predict(val_ds), axis=1)' : '(model.predict(val_ds) > 0.5).astype(int)'}\nConfusionMatrixDisplay.from_predictions(y_val, y_pred)\nplt.show()`;
+        } else {
+          // Matrice de confusion sur le jeu de validation
+          out += `\n\nfrom sklearn.metrics import ConfusionMatrixDisplay\ny_pred = ${predToLabels}\nConfusionMatrixDisplay.from_predictions(y_val, y_pred)\nplt.show()`;
+        }
+      }
+      return out;
+    }
+    if (state.task === 'regression'){
+      // Résidus attendus centrés autour de 0, sans motif visible (sinon le modèle rate un signal)
+      return `import matplotlib.pyplot as plt\n\nresiduals = y_test - y_pred\nplt.scatter(y_pred, residuals)\nplt.axhline(0, color="red", linestyle="--")\nplt.xlabel("Prédictions")\nplt.ylabel("Résidus")\nplt.title("Analyse des résidus")\nplt.show()`;
+    }
+    if (state.task === 'classification'){
+      // Matrice de confusion sur le jeu de test
+      return `import matplotlib.pyplot as plt\nfrom sklearn.metrics import ConfusionMatrixDisplay\n\nConfusionMatrixDisplay.from_estimator(model, X_test, y_test)\nplt.show()`;
+    }
+    if (state.task === 'dimreduction'){
+      // Courbe de la méthode du coude (variance cumulée) + projection sur les 2 premières composantes
+      return `import matplotlib.pyplot as plt\nimport numpy as np\n\nplt.plot(np.cumsum(model.explained_variance_ratio_))\nplt.xlabel("Nombre de composantes")\nplt.ylabel("Variance expliquée cumulée")\nplt.title("Méthode du coude")\nplt.show()\n\nplt.scatter(X_reduced[:, 0], X_reduced[:, 1])\nplt.xlabel("Composante 1")\nplt.ylabel("Composante 2")\nplt.title("Projection 2D")\nplt.show()`;
+    }
+    return `import matplotlib.pyplot as plt\n\n# TODO : choisir les 2 features à afficher (ici les 2 premières colonnes de X)\nplt.scatter(X.iloc[:, 0], X.iloc[:, 1], c=model.labels_, cmap="viridis")\nplt.title("Clusters")\nplt.show()`;
+  }
+
+  // Fin du script PRINCIPAL : sauvegarde du modèle entraîné — TOUJOURS générée (pas une option :
+  // sans ça, le script d'usage séparé ci-dessous n'aurait rien à charger). Reste dans le même
+  // script puisque `model` y existe déjà. cf. genUsage() pour le bloc séparé (charge + prédit).
+  function genSaveModel(){
+    return state.kind === 'ml'
+      ? `import pickle\npickle.dump(model, open("model.pkl", "wb"))`
+      : `model.save("model.keras")`;
+  }
+
+  // Bloc "Utilisation finale" — VOLONTAIREMENT dans un script séparé (cf. #code-output-usage) : en
+  // pratique on l'exécute plus tard / ailleurs (autre notebook, mise en prod), donc `model` n'existe
+  // plus en mémoire — il faut le recharger depuis le disque (le modèle a toujours été sauvegardé
+  // dans le script principal ci-dessus, cf. genSaveModel()).
+  function genUsage(){
+    if (state.kind === 'ml'){
+      // PCA/TruncatedSVD projettent (.transform()), ils ne "prédisent" rien — les autres modèles ML prédisent
+      const action = state.task === 'dimreduction'
+        ? `# Projeter une nouvelle donnée dans l'espace réduit\n# TODO : remplir new_data avec les mêmes colonnes que X à l'entraînement\n# new_data = pd.DataFrame([...], columns=X.columns)\n# model.transform(new_data)`
+        : `# Prédire sur une nouvelle donnée\n# TODO : remplir new_data avec les mêmes colonnes que X à l'entraînement\n# new_data = pd.DataFrame([...], columns=X.columns)\n# model.predict(new_data)`;
+      return `import pickle\n\nmodel = pickle.load(open("model.pkl", "rb"))\n\n${action}`;
+    }
+    return `from keras.models import load_model\n\nmodel = load_model("model.keras")\n\n# Prédire sur une nouvelle donnée\n# TODO : remplir new_data avec la même forme (shape) que les données d'entraînement\n# model.predict(new_data)`;
+  }
+
+  function renderCode(){
+    const sections = [
+      section('Charger les données', genLoad()),
+      section('Explorer', genExploreSection()),
+      section('Nettoyer', genCleanSection()),
+      section('Fréquence de la série', genFreqSection()),
+      section('Split ' + (state.task==='clustering' ? '' : (state.kind==='dl' ? 'train / validation' : 'train / test')), genSplit()),
+      section('Conversion de types', genTypesSection()),
+      section('Valeurs manquantes', genMissingSection()),
+      section('Colonnes catégorielles & scaling', genCatScalingSection()),
+      section('Baseline', genBaseline()),
+      section(state.kind==='ml' ? 'Modèle' : 'Architecture', genModel()),
+      section('Compiler', genCompile()),
+      section("Recherche d'hyperparamètres (tuning)", genTuning()),
+      section('Entraîner', genTrain()),
+      section('Évaluer' + (state.kind==='ml' && state.crossval && !isUnsupervised() && state.task!=='timeseries' ? ' & vérifier (cross-validation)' : ''), genEval()),
+      section('Visualisation', genViz()),
+      section('Sauvegarder le modèle', genSaveModel()),
+    ].filter(Boolean);
+    const rawBody = sections.map((s, i) => `# ${'─'.repeat(58)}\n# ${i+1} · ${s.title}\n# ${'─'.repeat(58)}\n${s.body}\n`).join('\n');
+    const {imports, rest} = extractImports(rawBody);
+    const importBlock = imports.length ? imports.join('\n') + '\n\n' : '';
+    document.getElementById('code-output-requirements').textContent = genRequirementsBlock(imports);
+    document.getElementById('code-output').textContent = genHeader() + '\n' + importBlock + rest;
+    renderUsageCode(); // même state pilote les deux scripts — toujours les regénérer ensemble
+  }
+
+  // Script séparé (cf. commentaire sur genUsage() ci-dessus) — pas de découpage en étapes numérotées,
+  // c'est un petit script autonome à part entière ; imports regroupés en haut, même logique que renderCode().
+  function renderUsageCode(){
+    const {imports, rest} = extractImports(genUsage());
+    const importBlock = imports.length ? imports.join('\n') + '\n\n' : '';
+    document.getElementById('code-output-usage-requirements').textContent = genRequirementsBlock(imports);
+    document.getElementById('code-output-usage').textContent = importBlock + rest;
+  }
+
+  function wireCopyButton(btnId, sourceId){
+    const btn = document.getElementById(btnId);
+    btn.addEventListener('click', () => {
+      const text = document.getElementById(sourceId).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copié ✓';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('copied'); }, 1500);
+      });
+    });
+  }
+  wireCopyButton('code-copy-btn-usage', 'code-output-usage');
+  wireCopyButton('code-copy-btn-usage-requirements', 'code-output-usage-requirements');
+
+  wireCopyButton('code-copy-btn', 'code-output');
+  wireCopyButton('code-copy-btn-requirements', 'code-output-requirements');
+
+  renderForm();
+  renderCode();
+})();
+</script>
+
+<script>
+/* ---------- Recherche globale (sur toutes les pages, actives ou non), résultats groupés PAR
+   PAGE : un compteur + prev/next sous chaque onglet du topnav plutôt qu'un seul prev/next global
+   (cf. structure-tech.md pour le détail — refonte 2026-08-21, l'ancienne barre de recherche vivait
+   dans la sidebar avec un seul compteur "n/total" toutes pages confondues). ---------- */
+(function(){
+  const searchInput = document.getElementById('search-input');
+  const topTabsEl = document.querySelector('.top-tabs');
+
+  const pageCells = {};
+  PAGES.forEach(page => {
+    const row = document.querySelector('.top-tab-results[data-page="' + page + '"]');
+    if (!row) return;
+    pageCells[page] = {
+      row,
+      prevBtn: row.querySelector('.ttr-prev'),
+      nextBtn: row.querySelector('.ttr-next'),
+      countEl: row.querySelector('.ttr-count'),
+    };
+  });
+
+  let allMarks = [];
+  let marksByPage = {};
+  let indexByPage = {};
+
+  function escapeRegExp(s){
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function clearMarks(){
+    allMarks.forEach(mark => {
+      const parent = mark.parentNode;
+      if (!parent) return;
+      parent.replaceChild(document.createTextNode(mark.textContent), mark);
+      parent.normalize();
+    });
+    allMarks = [];
+    marksByPage = {};
+    indexByPage = {};
+  }
+
+  function highlightNode(node, pattern, page){
+    const text = node.nodeValue;
+    const regex = new RegExp(pattern, 'gi');
+    regex.lastIndex = 0;
+    if (!regex.test(text)) return;
+    regex.lastIndex = 0;
+    const frag = document.createDocumentFragment();
+    let lastIndex = 0, m;
+    while ((m = regex.exec(text))){
+      if (m.index > lastIndex) frag.appendChild(document.createTextNode(text.slice(lastIndex, m.index)));
+      const mark = document.createElement('mark');
+      mark.className = 'search-mark';
+      mark.textContent = m[0];
+      frag.appendChild(mark);
+      allMarks.push(mark);
+      marksByPage[page].push(mark);
+      lastIndex = m.index + m[0].length;
+    }
+    if (lastIndex < text.length) frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+    node.parentNode.replaceChild(frag, node);
+  }
+
+  function buildMarksForPage(page, pattern){
+    const scopeEl = document.getElementById('mainpage-' + page);
+    if (!scopeEl) return;
+    const walker = document.createTreeWalker(scopeEl, NodeFilter.SHOW_TEXT, {
+      acceptNode(node){
+        if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        const p = node.parentElement;
+        if (!p || p.closest('.katex') || p.closest('script,style')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    const nodes = [];
+    let n;
+    while ((n = walker.nextNode())) nodes.push(n);
+    nodes.forEach(node => highlightNode(node, pattern, page));
+  }
+
+  function buildMarks(query){
+    const pattern = escapeRegExp(query);
+    PAGES.forEach(page => { marksByPage[page] = []; });
+    PAGES.forEach(page => buildMarksForPage(page, pattern));
+  }
+
+  function updateUI(){
+    const hasQuery = searchInput.value.trim().length > 0;
+    topTabsEl.classList.toggle('searching', hasQuery);
+    PAGES.forEach(page => {
+      const cell = pageCells[page];
+      if (!cell) return;
+      const marks = marksByPage[page] || [];
+      cell.row.classList.toggle('has-results', marks.length > 0);
+      cell.countEl.textContent = hasQuery ? (marks.length || '—') : '';
+      cell.prevBtn.disabled = cell.nextBtn.disabled = marks.length === 0;
+    });
+  }
+
+  function goToInPage(page, idx){
+    const marks = marksByPage[page] || [];
+    if (!marks.length) return;
+    allMarks.forEach(m => m.classList.remove('current'));
+    const newIdx = ((idx % marks.length) + marks.length) % marks.length;
+    indexByPage[page] = newIdx;
+    const mark = marks[newIdx];
+    mark.classList.add('current');
+    const panel = mark.closest('.panel');
+    if (panel){
+      if (!panel.classList.contains('active')) showSection(panel.id.replace('panel-', ''));
+    } else if (page !== currentPage){
+      showPage(page);
+    }
+    scrollElementIntoMainRoot(mark, {center: true, smooth: true});
+  }
+
+  function firstPageWithResults(){
+    return PAGES.find(p => (marksByPage[p] || []).length > 0);
+  }
+
+  function runSearch(){
+    clearMarks();
+    const q = searchInput.value.trim();
+    if (!q){ updateUI(); return; }
+    buildMarks(q);
+    updateUI();
+    if ((marksByPage[currentPage] || []).length){
+      goToInPage(currentPage, 0);
+    } else {
+      const p = firstPageWithResults();
+      if (p) goToInPage(p, 0);
+    }
+  }
+
+  PAGES.forEach(page => {
+    const cell = pageCells[page];
+    if (!cell) return;
+    cell.prevBtn.addEventListener('click', () => {
+      goToInPage(page, (indexByPage[page] != null ? indexByPage[page] : 0) - 1);
+    });
+    cell.nextBtn.addEventListener('click', () => {
+      goToInPage(page, (indexByPage[page] != null ? indexByPage[page] : -1) + 1);
+    });
+  });
+
+  searchInput.addEventListener('input', runSearch);
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter'){
+      e.preventDefault();
+      const dir = e.shiftKey ? -1 : 1;
+      if ((marksByPage[currentPage] || []).length){
+        goToInPage(currentPage, (indexByPage[currentPage] != null ? indexByPage[currentPage] : -1) + dir);
+      } else {
+        const p = firstPageWithResults();
+        if (p) goToInPage(p, 0);
+      }
+    } else if (e.key === 'Escape'){
+      searchInput.value = '';
+      clearMarks();
+      updateUI();
+      searchInput.blur();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement !== searchInput &&
+        !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)){
+      e.preventDefault();
+      searchInput.focus();
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
